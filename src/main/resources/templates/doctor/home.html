@@ -1,0 +1,139 @@
+<!-- 路径: src/main/resources/templates/doctor/home.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医生工作台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h2 {
+            color: #667eea;
+        }
+        .user-info {
+            color: #666;
+            margin-top: 10px;
+        }
+        .function-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .card p {
+            color: #666;
+            font-size: 14px;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<button class="logout-btn" onclick="logout()">退出登录</button>
+
+<div class="container">
+    <div class="header">
+        <h2>🩺 医生工作台</h2>
+        <div class="user-info">
+            <p>欢迎, <strong id="doctorName"></strong>医生</p>
+            <p>工号: <span id="doctorId"></span></p>
+        </div>
+    </div>
+
+    <div class="function-cards">
+        <div class="card" onclick="location.href='/doctor/tongue-review'">
+            <div class="card-icon">👅</div>
+            <h3>舌诊审核</h3>
+            <p>查看并审核患者上传的舌象图,给出专业诊断意见</p>
+        </div>
+
+        <div class="card" onclick="location.href='/doctor/consultations'">
+            <div class="card-icon">💬</div>
+            <h3>在线问诊</h3>
+            <p>回复患者的健康咨询,提供专业医疗建议</p>
+        </div>
+
+        <div class="card" onclick="location.href='/doctor/prescriptions'">
+            <div class="card-icon">📝</div>
+            <h3>开具处方</h3>
+            <p>为患者开具西药、中药或检查处方</p>
+        </div>
+
+
+        <div class="card" onclick="location.href='/doctor/profile'">
+            <div class="card-icon">⚙️</div>
+            <h3>个人设置</h3>
+            <p>修改个人信息,更新资质证明</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 加载用户信息
+    window.onload = function() {
+        const username = localStorage.getItem('username');
+        const userId = localStorage.getItem('userId');
+
+        if (username) {
+            document.getElementById('doctorName').textContent = username;
+        }
+        if (userId) {
+            document.getElementById('doctorId').textContent = userId;
+        }
+    };
+
+    // 退出登录
+    function logout() {
+        if (confirm('确定要退出登录吗?')) {
+            localStorage.clear();
+            window.location.href = '/login';
+        }
+    }
+</script>
+</body>
+</html>

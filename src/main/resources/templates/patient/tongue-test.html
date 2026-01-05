@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能舌诊 - 专业版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 1s;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        .upload-panel, .result-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .image-preview {
+            width: 100%;
+            max-height: 300px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f9f9f9;
+            margin-top: 10px;
+        }
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .image-preview.empty {
+            height: 200px;
+            color: #999;
+        }
+        .btn-analyze {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn-analyze:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-analyze:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #667eea;
+            display: none;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        .result-content { display: none; }
+        .result-content.active { display: block; animation: fadeIn 0.5s; }
+        .placeholder {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .result-header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .diagnosis-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .diagnosis-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .diagnosis-card .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .diagnosis-card .value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<a href="/patient/home" class="back-btn">← 返回主页</a>
+
+<div class="container">
+    <div class="header">
+        <h1>🌿 智能中医舌诊系统</h1>
+        <p>基于人工智能的专业舌象分析平台</p>
+    </div>
+
+    <div class="main-content">
+        <div class="upload-panel">
+            <h2 style="margin-bottom: 20px; color: #333;">📸 上传舌象</h2>
+
+            <input type="hidden" id="userId" th:value="${userId}">
+
+            <div class="form-group">
+                <label>选择舌头照片</label>
+                <input type="file" id="image" accept="image/*">
+            </div>
+
+            <div class="image-preview empty" id="preview">
+                <span>📷 选择图片后将显示预览</span>
+            </div>
+
+            <button class="btn-analyze" onclick="analyzeTongue()">
+                🔍 开始AI分析
+            </button>
+        </div>
+
+        <div class="result-panel">
+            <div class="placeholder" id="placeholder">
+                <h3>请上传舌象照片开始分析</h3>
+                <p>系统将基于中医理论进行专业诊断</p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <h3>AI正在分析中...</h3>
+                <p>请稍候，这可能需要5-10秒</p>
+            </div>
+
+            <div class="result-content" id="result"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 图片预览
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('preview');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.classList.remove('empty');
+                preview.innerHTML = `<img src="${e.target.result}" alt="预览">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 分析舌诊(添加userId)
+    async function analyzeTongue() {
+        const fileInput = document.getElementById('image');
+        const placeholder = document.getElementById('placeholder');
+        const loading = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+
+        if (!fileInput.files[0]) {
+            alert('❌ 请选择舌象照片');
+            return;
+        }
+
+        // ✅ 获取userId：优先取后端渲染的隐藏域，取不到则兜底 localStorage
+        const hiddenUserId = document.getElementById('userId')?.value;
+        const userId = hiddenUserId || localStorage.getItem('userId');
+        if (!userId) {
+            alert('❌ 未获取到用户ID,请重新登录');
+            return;
+        }
+
+        placeholder.style.display = 'none';
+        loading.style.display = 'block';
+        resultDiv.classList.remove('active');
+
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+        formData.append('userId', userId);  // ✅ 添加userId参数
+
+        try {
+            const response = await fetch('/api/tongue/analyze', {  // ✅ 改为相对路径
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')  // ✅ 添加token
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            loading.style.display = 'none';
+
+            if (data.code === 200) {
+                renderResult(data.data);
+            } else {
+                resultDiv.innerHTML =
+                    `<div class="error"><h3>❌ 分析失败</h3><p>${data.message}</p></div>`;
+                resultDiv.classList.add('active');
+            }
+        } catch (error) {
+            loading.style.display = 'none';
+            resultDiv.innerHTML = `<div class="error"><h3>❌ 请求失败</h3><p>${error.message}</p></div>`;
+            resultDiv.classList.add('active');
+        }
+    }
+
+
+    // 渲染结果
+    function renderResult(data) {
+        const resultDiv = document.getElementById('result');
+
+        let parsedData = {};
+        try {
+            parsedData = JSON.parse(data.fullAnalysis);
+        } catch (e) {
+            parsedData = {
+                tongueColor: data.tongueColor || '未识别',
+                tongueShape: data.tongueShape || '未识别',
+                coatingColor: data.coatingColor || '未识别',
+                coatingTexture: data.coatingQuality || '未识别',
+                syndrome: data.syndrome || '未识别',
+                analysis: data.pathogenesis || '暂无分析',
+                suggestions: data.advice || '暂无建议'
+            };
+        }
+
+        const suggestions = parsedData.suggestions || '';
+        let suggestionsList = suggestions.split('\n').filter(s => s.trim());
+        if (suggestionsList.length === 0) {
+            suggestionsList = [suggestions];
+        }
+
+        const html = `
+               <div class="result-header">
+                   <h2>✅ 舌诊分析报告</h2>
+                   <div class="timestamp">分析时间: ${new Date(data.createTime).toLocaleString('zh-CN')}</div>
+               </div>
+
+               <div class="diagnosis-cards">
+                   <div class="diagnosis-card">
+                       <div class="label">舌质颜色</div>
+                       <div class="value">${parsedData.tongueColor || '未识别'}</div>
+                   </div>
+                   <div class="diagnosis-card">
+                       <div class="label">舌体形态</div>
+                       <div class="value">${parsedData.tongueShape || '未识别'}</div>
+                   </div>
+                   <div class="diagnosis-card">
+                       <div class="label">舌苔颜色</div>
+                       <div class="value">${parsedData.coatingColor || '未识别'}</div>
+                   </div>
+                   <div class="diagnosis-card">
+                       <div class="label">舌苔质地</div>
+                       <div class="value">${parsedData.coatingTexture || '未识别'}</div>
+                   </div>
+                   <div class="diagnosis-card" style="grid-column: 1/-1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; color: white;">
+                       <div class="label" style="color: rgba(255,255,255,0.9);">证型诊断</div>
+                       <div class="value" style="color: white; font-size: 1.5em;">${parsedData.syndrome || '未识别'}</div>
+                   </div>
+               </div>
+
+               <div class="section">
+                   <div class="section-title">🔍 病机分析</div>
+                   <div class="section-content">${(parsedData.analysis || '暂无分析').replace(/\n/g, '<br>')}</div>
+               </div>
+
+               <div class="section">
+                   <div class="section-title">💊 调理建议</div>
+                   <div class="section-content">
+                       ${suggestionsList.map(s => {
+            const trimmed = s.trim();
+            if (!trimmed) return '';
+            return /^\d+\./.test(trimmed)
+                ? `<div style="margin-bottom: 10px;"><strong>${trimmed}</strong></div>`
+                : `<div style="margin-bottom: 8px;">• ${trimmed}</div>`;
+        }).join('')}
+                   </div>
+               </div>
+
+               <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                   <strong>⚠️ 重要提示</strong>
+                   <p style="margin-top: 8px; color: #856404;">
+                       本分析结果仅供参考，不能替代专业医生的诊断。如有不适，请及时就医。
+                   </p>
+               </div>
+           `;
+
+        resultDiv.innerHTML = html;
+        resultDiv.classList.add('active');
+    }
+</script>
+</body>
+</html>

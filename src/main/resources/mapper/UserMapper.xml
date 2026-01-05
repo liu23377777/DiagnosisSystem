@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tcm.diagnosissystem.mapper.patient.UserMapper">
+
+    <!-- ✅ 添加这个方法 -->
+    <select id="selectByUsername" resultType="com.tcm.diagnosissystem.entity.User">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+
+    <!-- 插入用户 -->
+    <insert id="insertUser" parameterType="com.tcm.diagnosissystem.entity.User"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (
+            username, password, real_name, phone, email,
+            gender, birth_date, avatar_url, create_time
+        ) VALUES (
+                     #{username}, #{password}, #{realName}, #{phone}, #{email},
+                     #{gender}, #{birthDate}, #{avatarUrl}, #{createTime}
+                 )
+    </insert>
+
+    <!-- 根据ID查询用户 -->
+    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.User">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <!-- 更新用户信息 -->
+    <update id="updateUser" parameterType="com.tcm.diagnosissystem.entity.User">
+        UPDATE user
+        SET real_name = #{realName},
+            phone = #{phone},
+            email = #{email},
+            gender = #{gender},
+            birth_date = #{birthDate},
+            avatar_url = #{avatarUrl}
+        WHERE id = #{id}
+    </update>
+
+    <!-- ✅ 根据手机号查询 -->
+    <select id="findByPhone" resultType="com.tcm.diagnosissystem.entity.User">
+        SELECT * FROM user WHERE phone = #{phone}
+    </select>
+
+    <!-- ✅ 查询待审核的医生申请 (假设role字段表示身份，status表示审核状态) -->
+    <select id="findPendingDoctors" resultType="com.tcm.diagnosissystem.entity.User">
+        SELECT * FROM user
+        WHERE role = 'DOCTOR' AND status = 0
+        ORDER BY create_time DESC
+    </select>
+
+
+</mapper>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计分析 - 管理员</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://cdnjs.loli.net/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <style>
+        body { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; padding:2rem 0; }
+        .container{max-width:1200px;}
+        .card{border:0;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);margin-bottom:2rem;}
+        .stat-card{text-align:center;padding:2rem;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border-radius:12px;margin-bottom:1.5rem;}
+        .stat-card h3{font-size:2.5rem;margin:.5rem 0;}
+        .stat-card p{margin:0;opacity:.9;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white mb-0">📊 统计分析</h2>
+        <a href="/admin/dashboard" class="btn btn-light">返回控制台</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3"><div class="stat-card"><p>总患者数</p><h3 id="totalPatients">-</h3></div></div>
+        <div class="col-md-3"><div class="stat-card"><p>正常患者</p><h3 id="activePatients">-</h3></div></div>
+        <div class="col-md-3"><div class="stat-card"><p>总医生数</p><h3 id="totalDoctors">-</h3></div></div>
+        <div class="col-md-3"><div class="stat-card"><p>正常医生</p><h3 id="activeDoctors">-</h3></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6"><div class="card"><div class="card-body"><h5 class="card-title">患者状态分布</h5><canvas id="patientChart"></canvas></div></div></div>
+        <div class="col-md-6"><div class="card"><div class="card-body"><h5 class="card-title">医生状态分布</h5><canvas id="doctorChart"></canvas></div></div></div>
+    </div>
+</div>
+
+<script>
+    function getToken(){const t=localStorage.getItem('token');if(t) return t; const m=document.cookie.match(/(?:^|;\s*)token=([^;]+)/);return m?decodeURIComponent(m[1]):null;}
+    const token=getToken();
+
+    function waitChart(cb){ if(window.Chart){cb();} else setTimeout(()=>waitChart(cb),100);} // 轮询等待 Chart.js 加载
+
+    window.onload=function(){ if(!token){alert('未登录');location.href='/login';return;} loadStats(); };
+
+    async function loadStats(){
+        try{
+            const r=await fetch('/api/admin/stats',{headers:{Authorization:'Bearer '+token}});
+            const res=await r.json();
+            if(res.code===200){fillNumbers(res.data); waitChart(()=>drawCharts(res.data));}
+            else alert(res.message||'加载失败');
+        }catch(e){alert('网络错误:'+e.message);} }
+
+    function fillNumbers(s){ document.getElementById('totalPatients').textContent=s.totalPatients||0; document.getElementById('activePatients').textContent=s.activePatients||0; document.getElementById('totalDoctors').textContent=s.totalDoctors||0; document.getElementById('activeDoctors').textContent=s.activeDoctors||0; }
+
+    let patientChart,doctorChart;
+    function drawCharts(stats){ if(!window.Chart){console.error('Chart.js 未加载');return;}
+        const pc=document.getElementById('patientChart').getContext('2d'); if(patientChart) patientChart.destroy(); patientChart=new Chart(pc,{type:'doughnut',data:{labels:['正常','禁用'],datasets:[{data:[stats.activePatients||0,stats.disabledPatients||0],backgroundColor:['#28a745','#dc3545']} ]},options:{responsive:true}});
+        const dc=document.getElementById('doctorChart').getContext('2d'); if(doctorChart) doctorChart.destroy(); doctorChart=new Chart(dc,{type:'doughnut',data:{labels:['正常','禁用'],datasets:[{data:[stats.activeDoctors||0,stats.disabledDoctors||0],backgroundColor:['#007bff','#ffc107']}]},options:{responsive:true}});
+    }
+</script>
+</body>
+</html>

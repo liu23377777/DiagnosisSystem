@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户注册 - 智能中医诊断系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 500px;
+    }
+    h1 {
+      text-align: center;
+      color: #667eea;
+      margin-bottom: 30px;
+    }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+    input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #667eea; }
+    .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+    .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+    .link { text-align: center; margin-top: 15px; color: #666; }
+    .link a { color: #667eea; text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🌿 用户注册</h1>
+  <div th:if="${error}" class="error" th:text="${error}"></div>
+  <form id="regForm" method="post" action="/register">
+    <div class="form-group">
+      <label>身份 *</label>
+      <select name="role" id="roleSelect" required onchange="toggleDoctorFields()">
+        <option value="PATIENT" selected>患者</option>
+        <option value="DOCTOR">医生</option>
+      </select>
+    </div>
+    <div class="form-group"><label>用户名 *</label><input type="text" name="username" required></div>
+    <div class="form-group"><label>密码 *</label><input type="password" name="password" required></div>
+    <div class="form-group"><label>确认密码 *</label><input type="password" name="confirmPassword" required></div>
+    <div class="form-group"><label>真实姓名 *</label><input type="text" name="realName" required></div>
+    <div class="form-group"><label>手机号 *</label><input type="tel" name="phone" required></div>
+    <div class="form-group"><label>邮箱 *</label><input type="email" name="email" required></div>
+    <div class="form-group"><label>性别 *</label>
+      <select name="gender" required><option value="1">男</option><option value="2">女</option></select></div>
+
+    <!-- 医生专属字段 -->
+    <div id="doctorFields" style="display:none;">
+      <div class="form-group"><label>医院 *</label><input type="text" name="hospitalName"></div>
+      <div class="form-group"><label>科室 *</label><input type="text" name="department"></div>
+      <div class="form-group"><label>职称 *</label><input type="text" name="title"></div>
+      <div class="form-group"><label>专长</label><input type="text" name="specialty"></div>
+    </div>
+
+    <button type="submit" class="btn">立即注册</button>
+  </form>
+
+  <div class="link">已有账号？<a href="/login">立即登录</a></div>
+</div>
+<script>
+  function toggleDoctorFields(){
+    const v=document.getElementById('roleSelect').value;
+    document.getElementById('doctorFields').style.display = v==='DOCTOR'? 'block':'none';
+  }
+  toggleDoctorFields();
+</script>
+</body>
+</html>

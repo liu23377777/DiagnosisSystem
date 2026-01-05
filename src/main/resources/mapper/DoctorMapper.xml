@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tcm.diagnosissystem.mapper.doctor.DoctorMapper">
+
+    <!-- ✅ 只保留一个 selectByUsername -->
+    <select id="selectByUsername" resultType="com.tcm.diagnosissystem.entity.Doctor">
+        SELECT * FROM doctor WHERE username = #{username}
+    </select>
+
+    <!-- 查询待审核列表 -->
+    <select id="selectPendingList" resultType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+        SELECT * FROM tongue_diagnosis
+        WHERE status = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据ID查询诊断记录 -->
+    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.Doctor">
+        SELECT * FROM doctor WHERE id = #{id}
+    </select>
+
+    <!-- 更新诊断记录 -->
+    <update id="updateById">
+        UPDATE tongue_diagnosis
+        SET doctor_id = #{doctorId},
+            final_syndrome = #{finalSyndrome},
+            final_advice = #{finalAdvice},
+            status = #{status},
+            review_time = #{reviewTime}
+        WHERE id = #{id}
+    </update>
+
+    
+
+</mapper>

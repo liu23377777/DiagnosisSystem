@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>舌诊审核管理 - 医生端</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    /* 头部 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 28px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    /* Tab切换 */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-size: 16px;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .tab:hover {
+      color: #667eea;
+    }
+
+    .tab.active {
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #667eea;
+    }
+
+    /* 搜索栏 */
+    .search-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .date-filter {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    /* 统计卡片 */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* 列表容器 */
+    .list-container {
+      min-height: 400px;
+    }
+
+    .tongue-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    /* 卡片样式 */
+    .tongue-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .tongue-card:hover {
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      transform: translateY(-5px);
+    }
+
+    .card-image {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .patient-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-reviewed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .card-info {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .card-info strong {
+      color: #333;
+    }
+
+    .card-footer {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-small {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-review {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-review:hover {
+      background: #5568d3;
+    }
+
+    .btn-detail {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-detail:hover {
+      background: #e0e0e0;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .page-btn:hover {
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .page-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      margin: 30px auto;
+      border-radius: 15px;
+      overflow: hidden;
+      animation: slideDown 0.3s;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+    }
+
+    .close-btn:hover {
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 25px;
+      max-height: calc(90vh - 80px);
+      overflow-y: auto;
+    }
+
+    .detail-section {
+      margin-bottom: 25px;
+    }
+
+    .detail-section h4 {
+      color: #667eea;
+      margin-bottom: 12px;
+      font-size: 16px;
+      border-left: 4px solid #667eea;
+      padding-left: 10px;
+    }
+
+    .detail-image {
+      width: 100%;
+      max-height: 350px;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .detail-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .detail-item label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .detail-item .value {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- 头部 -->
+  <div class="header">
+    <h1>🩺 舌诊审核管理</h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="location.href='/doctor/home'">返回首页</button>
+      <button class="btn btn-primary" onclick="refreshData()">🔄 刷新</button>
+    </div>
+  </div>
+
+  <!-- 统计卡片 -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-value" id="totalPending">0</div>
+      <div class="stat-label">待审核</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="totalReviewed">0</div>
+      <div class="stat-label">已审核</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="todayReviewed">0</div>
+      <div class="stat-label">今日审核</div>
+    </div>
+  </div>
+
+  <!-- Tab切换 -->
+  <div class="tabs">
+    <button class="tab active" data-tab="pending" onclick="switchTab('pending')">
+      待审核 (<span id="pendingCount">0</span>)
+    </button>
+    <button class="tab" data-tab="reviewed" onclick="switchTab('reviewed')">
+      已审核 (<span id="reviewedCount">0</span>)
+    </button>
+  </div>
+
+  <!-- 搜索栏 -->
+  <div class="search-bar">
+    <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索患者姓名...">
+    <input type="date" class="date-filter" id="dateFilter">
+    <button class="btn btn-primary" onclick="applyFilters()">筛选</button>
+    <button class="btn btn-secondary" onclick="clearFilters()">清空</button>
+  </div>
+
+  <!-- 列表容器 -->
+  <div class="list-container">
+    <div id="loadingIndicator" class="loading" style="display: none;">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+    <div id="tongueList" class="tongue-grid"></div>
+  </div>
+
+  <!-- 分页 -->
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- 审核模态框 -->
+<div id="reviewModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📋 舌诊审核</h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-section">
+        <h4>患者信息</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>姓名</label>
+            <div class="value" id="modalPatientName">-</div>
+          </div>
+          <div class="detail-item">
+            <label>上传时间</label>
+            <div class="value" id="modalCreateTime">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>舌象图片</h4>
+        <img id="modalImage" class="detail-image" src="" alt="舌象">
+      </div>
+
+      <div class="detail-section">
+        <h4>AI分析结果</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>舌色</label>
+            <div class="value" id="modalColor">-</div>
+          </div>
+          <div class="detail-item">
+            <label>舌形</label>
+            <div class="value" id="modalShape">-</div>
+          </div>
+          <div class="detail-item">
+            <label>舌苔</label>
+            <div class="value" id="modalCoating">-</div>
+          </div>
+          <div class="detail-item">
+            <label>证型</label>
+            <div class="value" id="modalSyndrome">-</div>
+          </div>
+        </div>
+        <div class="detail-item" style="margin-top: 15px;">
+          <label>AI建议</label>
+          <div class="value" id="modalAdvice">-</div>
+        </div>
+      </div>
+
+      <div class="detail-section" id="reviewSection">
+        <h4>医生审核</h4>
+        <div class="form-group">
+          <label>最终诊断 <span style="color: red;">*</span></label>
+          <textarea id="finalSyndrome" placeholder="请输入您的诊断结果(例如:气虚血瘀证)"></textarea>
+        </div>
+        <div class="form-group">
+          <label>医嘱建议 <span style="color: red;">*</span></label>
+          <textarea id="finalAdvice" placeholder="请输入医嘱和生活建议"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="submitReview()">
+          ✅ 提交审核
+        </button>
+      </div>
+
+      <div class="detail-section" id="reviewedSection" style="display: none;">
+        <h4>审核记录</h4>
+        <div class="detail-item">
+          <label>审核医生</label>
+          <div class="value" id="modalDoctorName">-</div>
+        </div>
+        <div class="detail-item" style="margin-top: 15px;">
+          <label>最终诊断</label>
+          <div class="value" id="modalFinalSyndrome">-</div>
+        </div>
+        <div class="detail-item" style="margin-top: 15px;">
+          <label>医嘱建议</label>
+          <div class="value" id="modalFinalAdvice">-</div>
+        </div>
+        <div class="detail-item" style="margin-top: 15px;">
+          <label>审核时间</label>
+          <div class="value" id="modalReviewTime">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 全局变量
+  const token = localStorage.getItem('token');
+  let currentTab = 'pending';
+  let currentTongueId = null;
+  let allData = { pending: [], reviewed: [] };
+  let filteredData = [];
+  let currentPage = 1;
+  const pageSize = 9;
+
+  // 页面加载
+  window.onload = function() {
+    if (!token) {
+      alert('请先登录');
+      window.location.href = '/login';
+      return;
+    }
+    loadAllData();
+  };
+
+  // 加载所有数据
+  async function loadAllData() {
+    showLoading(true);
+    try {
+      // 并行加载待审核和已审核数据
+      const [pendingRes, reviewedRes] = await Promise.all([
+        fetch('/api/doctor/tongue-review/pending', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/doctor/tongue-review/my-reviews', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
+
+      const pendingResult = await pendingRes.json();
+      const reviewedResult = await reviewedRes.json();
+
+      if (pendingResult.code === 200) {
+        allData.pending = pendingResult.data || [];
+      }
+      if (reviewedResult.code === 200) {
+        allData.reviewed = reviewedResult.data || [];
+      }
+
+      updateStats();
+      renderCurrentTab();
+    } catch (error) {
+      console.error('加载数据失败:', error);
+      showError('加载数据失败,请稍后重试');
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // 更新统计
+  function updateStats() {
+    document.getElementById('totalPending').textContent = allData.pending.length;
+    document.getElementById('totalReviewed').textContent = allData.reviewed.length;
+    document.getElementById('pendingCount').textContent = allData.pending.length;
+    document.getElementById('reviewedCount').textContent = allData.reviewed.length;
+
+    // 计算今日审核
+    const today = new Date().toDateString();
+    const todayCount = allData.reviewed.filter(item => {
+      if (!item.reviewTime) return false;
+      return new Date(item.reviewTime).toDateString() === today;
+    }).length;
+    document.getElementById('todayReviewed').textContent = todayCount;
+  }
+
+  // 切换Tab
+  function switchTab(tab) {
+    currentTab = tab;
+    currentPage = 1;
+
+    // 更新Tab样式
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.remove('active');
+      if (t.dataset.tab === tab) {
+        t.classList.add('active');
+      }
+    });
+
+    renderCurrentTab();
+  }
+
+  // 渲染当前Tab
+  function renderCurrentTab() {
+    const data = allData[currentTab] || [];
+    filteredData = applyCurrentFilters(data);
+    renderList();
+  }
+
+  // 应用筛选
+  function applyCurrentFilters(data) {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const dateFilter = document.getElementById('dateFilter').value;
+
+    return data.filter(item => {
+      // 搜索筛选
+      if (searchText && item.patientName && !item.patientName.toLowerCase().includes(searchText)) {
+        return false;
+      }
+
+      // 日期筛选
+      if (dateFilter) {
+        const itemDate = new Date(item.createTime).toISOString().split('T')[0];
+        if (itemDate !== dateFilter) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  // 应用筛选按钮
+  function applyFilters() {
+    currentPage = 1;
+    renderCurrentTab();
+  }
+
+  // 清空筛选
+  function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('dateFilter').value = '';
+    currentPage = 1;
+    renderCurrentTab();
+  }
+
+  // 渲染列表
+  function renderList() {
+    const container = document.getElementById('tongueList');
+
+    if (filteredData.length === 0) {
+      container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>${currentTab === 'pending' ? '暂无待审核记录' : '暂无已审核记录'}</p>
+                </div>
+            `;
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    // 分页
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = filteredData.slice(start, end);
+
+    // 渲染卡片
+    let html = '';
+    pageData.forEach(item => {
+      html += `
+                <div class="tongue-card" onclick="openDetailModal(${item.id})">
+                    <img class="card-image" src="${item.imageUrl || '/images/tongue-placeholder.png'}"
+                         alt="舌象" onerror="this.src='/images/tongue-placeholder.png'">
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div class="patient-name">${item.patientName || '未知患者'}</div>
+                            <span class="status-badge ${item.status === 0 ? 'status-pending' : 'status-reviewed'}">
+                                ${item.status === 0 ? '待审核' : '已审核'}
+                            </span>
+                        </div>
+                        <div class="card-info">
+                            <strong>AI证型:</strong> ${item.aiSyndrome || '无'}
+                        </div>
+                        <div class="card-info">
+                            <strong>舌色:</strong> ${item.tongueColor || '未知'}
+                            <strong>舌形:</strong> ${item.tongueShape || '未知'}
+                        </div>
+                        <div class="card-info">
+                            <strong>上传时间:</strong> ${formatDate(item.createTime)}
+                        </div>
+                        ${item.reviewTime ? `
+                        <div class="card-info">
+                            <strong>审核时间:</strong> ${formatDate(item.reviewTime)}
+                        </div>
+                        ` : ''}
+                        <div class="card-footer">
+                            ${item.status === 0
+              ? `<button class="btn-small btn-review" onclick="event.stopPropagation(); openReviewModal(${item.id})">立即审核</button>`
+              : `<button class="btn-small btn-detail" onclick="event.stopPropagation(); openDetailModal(${item.id})">查看详情</button>`
+      }
+                        </div>
+                    </div>
+                </div>
+            `;
+    });
+
+    container.innerHTML = html;
+
+    // 渲染分页
+    renderPagination(totalPages);
+  }
+
+  // 渲染分页
+  function renderPagination(totalPages) {
+    const container = document.getElementById('pagination');
+    if (totalPages <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+
+    // 上一页
+    html += `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">‹</button>`;
+
+    // 页码
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+      } else if (i === currentPage - 3 || i === currentPage + 3) {
+        html += `<span class="page-btn" disabled>...</span>`;
+      }
+    }
+
+    // 下一页
+    html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">›</button>`;
+
+    container.innerHTML = html;
+  }
+
+  // 切换页码
+  function changePage(page) {
+    currentPage = page;
+    renderList();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // 打开审核模态框
+  async function openReviewModal(tongueId) {
+    currentTongueId = tongueId;
+    const data = await fetchTongueDetail(tongueId);
+    if (!data) return;
+
+    fillModalData(data, true);
+    document.getElementById('reviewModal').style.display = 'block';
+  }
+
+  // 打开详情模态框
+  async function openDetailModal(tongueId) {
+    currentTongueId = tongueId;
+    const data = await fetchTongueDetail(tongueId);
+    if (!data) return;
+
+    fillModalData(data, false);
+    document.getElementById('reviewModal').style.display = 'block';
+  }
+
+  // 获取舌诊详情
+  async function fetchTongueDetail(tongueId) {
+    try {
+      const response = await fetch(`/api/doctor/tongue-review/detail/${tongueId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await response.json();
+
+      if (result.code === 200) {
+        return result.data;
+      } else {
+        alert('加载详情失败: ' + result.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('加载详情失败:', error);
+      alert('网络错误,请稍后重试');
+      return null;
+    }
+  }
+
+  // 填充模态框数据
+  function fillModalData(data, isReviewMode) {
+    document.getElementById('modalPatientName').textContent = data.patientName || '未知';
+    document.getElementById('modalCreateTime').textContent = formatDateTime(data.createTime);
+    document.getElementById('modalImage').src = data.imageUrl || '';
+    document.getElementById('modalColor').textContent = data.tongueColor || '未知';
+    document.getElementById('modalShape').textContent = data.tongueShape || '未知';
+    document.getElementById('modalCoating').textContent = data.coating || '未知';
+    document.getElementById('modalSyndrome').textContent = data.aiSyndrome || '无';
+    document.getElementById('modalAdvice').textContent = data.aiAdvice || '无';
+
+      if (isReviewMode) {
+        document.getElementById('reviewSection').style.display = 'block';
+        document.getElementById('reviewedSection').style.display = 'none';
+        document.getElementById('finalSyndrome').value = '';
+        document.getElementById('finalAdvice').value = '';
+      } else {
+        document.getElementById('reviewSection').style.display = 'none';
+        document.getElementById('reviewedSection').style.display = 'block';
+        document.getElementById('modalDoctorName').textContent = data.doctorName || '未知';
+        document.getElementById('modalFinalSyndrome').textContent = data.finalSyndrome || '无';
+        document.getElementById('modalFinalAdvice').textContent = data.finalAdvice || '无';
+        document.getElementById('modalReviewTime').textContent = formatDateTime(data.reviewTime);
+      }
+    }
+
+    // 提交审核
+    async function submitReview() {
+      const finalSyndrome = document.getElementById('finalSyndrome').value.trim();
+      const finalAdvice = document.getElementById('finalAdvice').value.trim();
+
+      if (!finalSyndrome) {
+        alert('⚠️ 请填写最终诊断');
+        return;
+      }
+
+      if (!finalAdvice) {
+        alert('⚠️ 请填写医嘱建议');
+        return;
+      }
+
+      if (!confirm('确定提交审核吗?提交后将无法修改。')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/doctor/tongue-review/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            tongueId: currentTongueId,
+            finalSyndrome: finalSyndrome,
+            finalAdvice: finalAdvice
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.code === 200) {
+          alert('✅ 审核提交成功!');
+          closeModal();
+          await loadAllData(); // 重新加载数据
+        } else {
+          alert('❌ 审核失败: ' + result.message);
+        }
+      } catch (error) {
+        console.error('提交审核失败:', error);
+        alert('❌ 网络错误,请稍后重试');
+      }
+    }
+
+    // 关闭模态框
+    function closeModal() {
+      document.getElementById('reviewModal').style.display = 'none';
+      currentTongueId = null;
+    }
+
+    // 点击模态框外部关闭
+    window.onclick = function(event) {
+      const modal = document.getElementById('reviewModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    // 刷新数据
+    async function refreshData() {
+      await loadAllData();
+      alert('✅ 数据已刷新');
+    }
+
+    // 显示加载状态
+    function showLoading(show) {
+      document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+      document.getElementById('tongueList').style.display = show ? 'none' : 'grid';
+    }
+
+    // 显示错误
+    function showError(message) {
+      const container = document.getElementById('tongueList');
+      container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <p style="color: #dc3545;">${message}</p>
+                <button class="btn btn-primary" onclick="loadAllData()">重新加载</button>
+            </div>
+        `;
+    }
+
+    // 格式化日期
+    function formatDate(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // 格式化日期时间
+    function formatDateTime(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hour = String(date.getHours()).padStart(2, '0');
+      const minute = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
+
+    // 键盘快捷键
+    document.addEventListener('keydown', function(e) {
+      // ESC 关闭模态框
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+
+      // Enter 搜索
+      if (e.key === 'Enter' && document.getElementById('searchInput') === document.activeElement) {
+        applyFilters();
+      }
+    });
+</script>
+</body>
+</html>

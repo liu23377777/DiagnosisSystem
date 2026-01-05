@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>处方管理 - 医生端</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#f6f7fa;padding-top:2rem}
+    .card{border:0;box-shadow:0 2px 8px rgba(0,0,0,.06);border-radius:12px}
+    .item-row td{vertical-align:middle}
+    .pill{font-size:.85rem;color:#6c757d}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>💊 处方管理</h2>
+    <div>
+      <button class="btn btn-outline-secondary" onclick="history.back()">返回</button>
+      <button class="btn btn-primary" onclick="loadMy()">刷新</button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="mb-3">开具新处方</h5>
+
+          <div class="mb-3">
+            <label class="form-label">患者ID</label>
+            <input id="patientId" class="form-control" placeholder="例如 1">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">药品搜索（名称/拼音码/编码）</label>
+            <div class="input-group">
+              <input id="drugKeyword" class="form-control" placeholder="例如 颗粒 / ZXKL">
+              <button class="btn btn-outline-primary" onclick="searchDrug()">搜索</button>
+            </div>
+            <div class="form-text">数据来源：drug_catalog_sql_results</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">搜索结果</label>
+            <select id="drugSelect" class="form-select" size="6"></select>
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-sm btn-outline-primary" onclick="addSelectedDrug()">加入明细</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="clearItems()">清空明细</button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">用法用量（可选）</label>
+            <input id="dosage" class="form-control" placeholder="例如：一日三次，每次1袋">
+          </div>
+
+          <div class="d-grid">
+            <button class="btn btn-success" onclick="submitPrescription()">提交处方并落库</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="mb-3">处方明细</h5>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+              <tr>
+                <th>药品</th>
+                <th>规格</th>
+                <th class="text-end">单价</th>
+                <th style="width:100px">数量</th>
+                <th class="text-end">小计</th>
+                <th></th>
+              </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="pill">共 <span id="itemCount">0</span> 项</span>
+            <strong>合计：￥<span id="total">0.00</span></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h5 class="mb-3">我的处方</h5>
+          <div id="myList" class="text-muted">加载中…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getToken(){
+    const ls = localStorage.getItem('token');
+    if(ls) return ls;
+    const m = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  const token = getToken();
+
+  let searchResults = [];
+  let items = [];
+
+  window.onload = function(){
+    if(!token){alert('未登录');location.href='/login';return;}
+    loadMy();
+  }
+
+  function money(n){
+    const x = Number(n||0);
+    return x.toFixed(2);
+  }
+
+  function calcTotal(){
+    let t = 0;
+    items.forEach(i=>t += (Number(i.unitPrice)||0) * (Number(i.quantity)||0));
+    document.getElementById('total').textContent = money(t);
+    document.getElementById('itemCount').textContent = String(items.length);
+  }
+
+  function renderItems(){
+    const body = document.getElementById('itemsBody');
+    body.innerHTML = '';
+    items.forEach((it, idx)=>{
+      const tr = document.createElement('tr');
+      tr.className='item-row';
+      tr.innerHTML = `
+        <td><div><strong>${it.drugName}</strong></div><div class="pill">${it.drugCode}</div></td>
+        <td class="pill">${it.specification||''}</td>
+        <td class="text-end">￥${money(it.unitPrice)}</td>
+        <td><input class="form-control form-control-sm" type="number" min="1" value="${it.quantity}" onchange="changeQty(${idx}, this.value)"></td>
+        <td class="text-end">￥${money((Number(it.unitPrice)||0)*(Number(it.quantity)||0))}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="removeItem(${idx})">删除</button></td>
+      `;
+      body.appendChild(tr);
+    });
+    calcTotal();
+  }
+
+  window.changeQty = function(idx, v){
+    items[idx].quantity = Math.max(1, Number(v||1));
+    renderItems();
+  }
+  window.removeItem = function(idx){
+    items.splice(idx,1);
+    renderItems();
+  }
+
+  async function searchDrug(){
+    const kw = document.getElementById('drugKeyword').value.trim();
+    const res = await fetch('/api/drug/search?keyword=' + encodeURIComponent(kw) + '&page=1&size=20');
+    const data = await res.json();
+    if(data.code!==200){alert(data.message||'搜索失败');return;}
+    searchResults = data.data || [];
+    const sel = document.getElementById('drugSelect');
+    sel.innerHTML = '';
+    searchResults.forEach((d, i)=>{
+      const o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = `${d.drugName} | ${d.specification||''} | ￥${money(d.price)} | ${d.drugCode}`;
+      sel.appendChild(o);
+    });
+  }
+
+  function addSelectedDrug(){
+    const sel = document.getElementById('drugSelect');
+    if(sel.value==='' || !searchResults[Number(sel.value)]){alert('请选择药品');return;}
+    const d = searchResults[Number(sel.value)];
+    items.push({
+      drugCode: d.drugCode,
+      drugName: d.drugName,
+      specification: d.specification,
+      unitPrice: Number(d.price||0),
+      quantity: 1,
+      dosage: document.getElementById('dosage').value || null
+    });
+    renderItems();
+  }
+
+  function clearItems(){
+    items = [];
+    renderItems();
+  }
+
+  async function submitPrescription(){
+    const patientId = Number(document.getElementById('patientId').value);
+    if(!patientId){alert('请输入患者ID');return;}
+    if(items.length===0){alert('请先加入至少一个药品');return;}
+
+    const payload = {
+      patientId: patientId,
+      diagnosisId: null,
+      items: items.map(i=>({
+        drugCode: i.drugCode,
+        drugName: i.drugName,
+        dosage: i.dosage,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice
+      }))
+    };
+
+    const res = await fetch('/api/prescription',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(data.code===200){
+      alert('处方已创建');
+      clearItems();
+      loadMy();
+    }else{
+      alert(data.message||'创建失败');
+    }
+  }
+
+  async function loadMy(){
+    const res = await fetch('/api/prescription/my',{
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    const el = document.getElementById('myList');
+    if(data.code!==200){
+      el.innerHTML = `<div class="text-danger">加载失败：${data.message||''}</div>`;
+      return;
+    }
+    const list = data.data || [];
+    if(list.length===0){
+      el.innerHTML = '<div class="text-muted">暂无处方</div>';
+      return;
+    }
+    el.innerHTML = '<div class="list-group">' + list.map(p=>
+      `<div class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <div><strong>处方 #${p.id}</strong> <span class="pill">患者ID:${p.patientId}</span></div>
+          <div class="pill">合计：￥${money(p.totalPrice)} | 时间：${p.createTime||''}</div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" onclick="viewItems(${p.id})">查看明细</button>
+      </div>`
+    ).join('') + '</div>';
+  }
+
+  async function viewItems(pid){
+    const res = await fetch(`/api/prescription/${pid}/items`);
+    const data = await res.json();
+    if(data.code!==200){alert(data.message||'加载明细失败');return;}
+    const items = data.data || [];
+    alert(items.map(i=>`${i.drugName} x${i.quantity} ￥${money(i.unitPrice)} 用法:${i.dosage||''}`).join('\n'));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <style>
+    body{
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      min-height:100vh;
+      display:flex;justify-content:center;align-items:center;
+      font-family:"Microsoft YaHei",Arial,sans-serif;
+    }
+    .card-box{
+      width:480px;
+      background:#fff;border-radius:16px;padding:40px 48px;
+      box-shadow:0 8px 25px rgba(0,0,0,.15);
+    }
+    .card-box h2{margin-bottom:32px;text-align:center;color:#4d4dff;font-weight:600}
+    .btn-primary{background:#4d4dff;border:none;width:100%}
+    .btn-primary:hover{background:#3b3bf0}
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预约挂号</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="card-box">
+    <h2>预约科室 / 医生</h2>
+
+    <div class="mb-3">
+      <label class="form-label">科室</label>
+      <select id="deptSel" class="form-select" onchange="loadDoctors()"></select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">医生</label>
+      <select id="docSel" class="form-select"></select>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">日期时间</label>
+      <input type="datetime-local" id="time" class="form-control">
+    </div>
+
+    <button class="btn btn-primary" onclick="submitApp()">预约</button>
+  </div>
+
+<script>
+function getToken(){
+  return localStorage.getItem('token') || (document.cookie.match(/(?:^|;\s*)token=([^;]+)/)||[])[1] || null;
+}
+const token=getToken();
+if(!token){alert('未登录');location.href='/login';}
+
+function headers(){return {'Authorization':'Bearer '+token,'Content-Type':'application/json'}}
+
+// 加载科室列表
+fetch('/api/department/all').then(r=>r.json()).then(d=>{
+  const sel=document.getElementById('deptSel');
+  d.data.forEach(dep=>{
+    const o=document.createElement('option');o.value=dep.id;o.textContent=dep.name;sel.appendChild(o);
+  });
+  loadDoctors();
+});
+
+function loadDoctors(){
+  const id=document.getElementById('deptSel').value;
+  fetch('/api/doctor/by-dept/'+id).then(r=>r.json()).then(d=>{
+    const sel=document.getElementById('docSel');sel.innerHTML='';
+    d.data.forEach(doc=>{
+      const o=document.createElement('option');o.value=doc.id;o.textContent=doc.realName+'('+doc.title+')';sel.appendChild(o);
+    });
+  });
+}
+
+function submitApp(){
+  const body={
+    deptId:document.getElementById('deptSel').value,
+    doctorId:document.getElementById('docSel').value,
+    time:document.getElementById('time').value
+  };
+  if(!body.time){alert('请选择时间');return;}
+  fetch('/api/appointment',{method:'POST',headers:headers(),body:JSON.stringify(body)})
+    .then(r=>r.json()).then(d=>alert(d.message||'成功'));
+}
+</script>
+</body>
+</html>

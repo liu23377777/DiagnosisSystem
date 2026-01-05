@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tcm.diagnosissystem.mapper.doctor.PaymentMapper">
+
+    <resultMap id="BaseResultMap" type="com.tcm.diagnosissystem.entity.Payment">
+        <id column="id" property="id" />
+        <result column="appointment_id" property="appointmentId" />
+        <result column="patient_id" property="patientId" />
+        <result column="doctor_id" property="doctorId" />
+        <result column="item_name" property="itemName" />
+        <result column="amount" property="amount" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="pay_time" property="payTime" />
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO payment (appointment_id, patient_id, doctor_id, item_name, amount, status, create_time)
+        VALUES (#{appointmentId}, #{patientId}, #{doctorId}, #{itemName}, #{amount}, #{status}, NOW())
+    </insert>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM payment WHERE id = #{id}
+    </select>
+
+    <select id="findByAppointmentId" resultMap="BaseResultMap">
+        SELECT * FROM payment WHERE appointment_id = #{appointmentId}
+    </select>
+
+    <select id="findByPatientId" resultMap="BaseResultMap">
+        SELECT * FROM payment WHERE patient_id = #{patientId} ORDER BY create_time DESC
+    </select>
+
+    <update id="updateStatus">
+        UPDATE payment SET status = #{status}, pay_time = NOW() WHERE id = #{id}
+    </update>
+    <delete id="deleteByAppointmentId">
+    DELETE FROM payment WHERE appointment_id = #{appointmentId}
+    </delete>
+
+</mapper>

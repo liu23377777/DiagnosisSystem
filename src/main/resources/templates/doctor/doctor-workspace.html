@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>医生工作台 - 中医智能诊断系统</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 24px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-info span {
+      color: #666;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-icon {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .recent-section {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .recent-section h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .recent-list {
+      list-style: none;
+    }
+
+    .recent-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .recent-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-item:hover {
+      background: #f8f9fa;
+    }
+
+    .patient-name {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .prescription-no {
+      color: #667eea;
+      font-size: 14px;
+    }
+
+    .status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-paid {
+      background: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>🏥 医生工作台</h1>
+  <div class="user-info">
+    <span>👨‍⚕️ <span id="doctorName">王医生</span></span>
+    <button class="btn btn-primary" onclick="logout()">退出登录</button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- 功能卡片 -->
+  <div class="dashboard">
+    <div class="card" onclick="location.href='/doctor/tongue-review'">
+      <div class="card-icon">👅</div>
+      <div class="card-title">舌诊审核</div>
+      <div class="card-desc">审核患者提交的舌诊记录，提供专业诊断建议</div>
+    </div>
+
+    <div class="card" onclick="location.href='/doctor/create-prescription'">
+      <div class="card-icon">📝</div>
+      <div class="card-title">开具处方</div>
+      <div class="card-desc">为患者开具西药、中药或检查处方</div>
+    </div>
+
+    <div class="card" onclick="location.href='/doctor/patients'">
+      <div class="card-icon">👥</div>
+      <div class="card-title">患者管理</div>
+      <div class="card-desc">查看患者列表和就诊历史</div>
+    </div>
+
+    <div class="card" onclick="location.href='/doctor/prescriptions'">
+      <div class="card-icon">📋</div>
+      <div class="card-title">处方记录</div>
+      <div class="card-desc">查看我开具的处方记录</div>
+    </div>
+
+    <div class="card" onclick="location.href='/doctor/statistics'">
+      <div class="card-icon">📊</div>
+      <div class="card-title">数据统计</div>
+      <div class="card-desc">查看工作数据和统计分析</div>
+    </div>
+  </div>
+
+  <!-- 待审核舌诊记录 -->
+  <div class="recent-section">
+    <h2>👅 待审核的舌诊记录 <span id="pendingCount" style="color: #667eea; font-size: 14px;"></span></h2>
+    <ul class="recent-list" id="pendingDiagnosis">
+      <li class="recent-item" style="color: #999; text-align: center; padding: 20px;">
+        正在加载...
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  // 加载医生信息
+  window.onload = function() {
+    loadDoctorInfo();
+    loadPendingDiagnosis();
+  };
+
+  function loadDoctorInfo() {
+    fetch('/api/doctor/info')
+            .then(response => response.json())
+            .then(data => {
+              if (data.code === 200) {
+                document.getElementById('doctorName').textContent = data.data.realName || '医生';
+              }
+            })
+            .catch(err => {
+              console.error('加载医生信息失败:', err);
+            });
+  }
+
+  function loadPendingDiagnosis() {
+    fetch('/api/doctor/pending-diagnosis')
+            .then(response => response.json())
+            .then(data => {
+              if (data.code === 200) {
+                displayPendingDiagnosis(data.data);
+                document.getElementById('pendingCount').textContent = `(${data.data.length}条)`;
+              } else {
+                document.getElementById('pendingDiagnosis').innerHTML = 
+                  '<li class="recent-item" style="color: #999; text-align: center; padding: 20px;">暂无待审核记录</li>';
+              }
+            })
+            .catch(err => {
+              console.error('加载待审核记录失败:', err);
+              document.getElementById('pendingDiagnosis').innerHTML = 
+                '<li class="recent-item" style="color: #999; text-align: center; padding: 20px;">加载失败</li>';
+            });
+  }
+
+  function displayPendingDiagnosis(diagnosisList) {
+    const listEl = document.getElementById('pendingDiagnosis');
+    if (!diagnosisList || diagnosisList.length === 0) {
+      listEl.innerHTML = '<li class="recent-item" style="color: #999; text-align: center; padding: 20px;">暂无待审核记录</li>';
+      return;
+    }
+    
+    listEl.innerHTML = diagnosisList.slice(0, 5).map(d => {
+      const createTime = d.createTime ? new Date(d.createTime).toLocaleString('zh-CN') : '未知时间';
+      return `
+        <li class="recent-item" onclick="viewDiagnosis(${d.id})" style="cursor: pointer;">
+          <div>
+            <span class="patient-name">诊断记录 #${d.id}</span>
+            <span class="prescription-no">(${createTime})</span>
+          </div>
+          <span class="status status-pending">待审核</span>
+        </li>
+      `;
+    }).join('');
+  }
+
+  function viewDiagnosis(id) {
+    location.href = `/doctor/tongue-review?id=${id}`;
+  }
+
+  function logout() {
+    if (confirm('确定要退出登录吗?')) {
+      window.location.href = '/logout';
+    }
+  }
+</script>
+</body>
+</html>

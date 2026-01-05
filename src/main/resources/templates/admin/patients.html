@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>患者管理 - 管理员</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .container { max-width: 1200px; }
+        .card {
+            border: 0;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.08);
+        }
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-disabled { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white mb-0">👥 患者管理</h2>
+        <div>
+            <input type="text" id="searchInput" class="form-control d-inline-block" style="width: 300px;" placeholder="搜索姓名/手机号/用户名">
+            <a href="/admin/dashboard" class="btn btn-light ms-2">返回控制台</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>真实姓名</th>
+                            <th>手机号</th>
+                            <th>邮箱</th>
+                            <th>性别</th>
+                            <th>状态</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientTable">
+                        <tr><td colspan="9" class="text-center">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="msg" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑模态框 -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑患者信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId">
+                    <div class="mb-3">
+                        <label class="form-label">真实姓名</label>
+                        <input type="text" id="editRealName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">手机号</label>
+                        <input type="tel" id="editPhone" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" id="editEmail" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">性别</label>
+                        <select id="editGender" class="form-select">
+                            <option value="0">女</option>
+                            <option value="1">男</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function getToken() {
+        const ls = localStorage.getItem('token');
+        if (ls) return ls;
+        const m = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+    const token = getToken();
+    let allPatients = [];
+
+    window.onload = function() {
+        if (!token) {
+            alert('请先登录');
+            location.href = '/login';
+            return;
+        }
+        loadPatients();
+        
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function() {
+            filterPatients();
+        });
+    };
+
+    async function loadPatients() {
+        try {
+            const res = await fetch('/api/admin/patients', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const result = await res.json();
+            if (result.code === 200) {
+                allPatients = result.data;
+                renderTable(allPatients);
+            } else {
+                showMsg('danger', result.message || '加载失败');
+            }
+        } catch (e) {
+            showMsg('danger', '网络错误: ' + e.message);
+        }
+    }
+
+    function filterPatients() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allPatients.filter(p => 
+            (p.realName && p.realName.toLowerCase().includes(keyword)) ||
+            (p.phone && p.phone.includes(keyword)) ||
+            (p.username && p.username.toLowerCase().includes(keyword))
+        );
+        renderTable(filtered);
+    }
+
+    function renderTable(patients) {
+        const tbody = document.getElementById('patientTable');
+        if (patients.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">暂无数据</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = patients.map(p => `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.username || '-'}</td>
+                <td>${p.realName || '-'}</td>
+                <td>${p.phone || '-'}</td>
+                <td>${p.email || '-'}</td>
+                <td>${p.gender === 1 ? '男' : p.gender === 0 ? '女' : '-'}</td>
+                <td>
+                    <span class="status-badge ${p.status === 1 ? 'status-active' : 'status-disabled'}">
+                        ${p.status === 1 ? '正常' : '禁用'}
+                    </span>
+                </td>
+                <td>${p.createTime ? new Date(p.createTime).toLocaleString('zh-CN') : '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="openEdit(${p.id})">编辑</button>
+                    <button class="btn btn-sm ${p.status === 1 ? 'btn-warning' : 'btn-success'}" 
+                            onclick="toggleStatus(${p.id}, ${p.status === 1 ? 0 : 1})">
+                        ${p.status === 1 ? '禁用' : '启用'}
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openEdit(id) {
+        const patient = allPatients.find(p => p.id === id);
+        if (!patient) return;
+        
+        document.getElementById('editId').value = patient.id;
+        document.getElementById('editRealName').value = patient.realName || '';
+        document.getElementById('editPhone').value = patient.phone || '';
+        document.getElementById('editEmail').value = patient.email || '';
+        document.getElementById('editGender').value = patient.gender != null ? patient.gender : 0;
+        
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    async function saveEdit() {
+        const id = document.getElementById('editId').value;
+        const data = {
+            realName: document.getElementById('editRealName').value,
+            phone: document.getElementById('editPhone').value,
+            email: document.getElementById('editEmail').value,
+            gender: parseInt(document.getElementById('editGender').value)
+        };
+        
+        try {
+            const res = await fetch(`/api/admin/patients/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.code === 200) {
+                showMsg('success', '更新成功');
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                loadPatients();
+            } else {
+                showMsg('danger', result.message || '更新失败');
+            }
+        } catch (e) {
+            showMsg('danger', '网络错误: ' + e.message);
+        }
+    }
+
+    async function toggleStatus(id, newStatus) {
+        if (!confirm(`确定${newStatus === 1 ? '启用' : '禁用'}该患者吗？`)) return;
+        
+        try {
+            const res = await fetch(`/api/admin/patients/${id}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const result = await res.json();
+            if (result.code === 200) {
+                showMsg('success', '操作成功');
+                loadPatients();
+            } else {
+                showMsg('danger', result.message || '操作失败');
+            }
+        } catch (e) {
+            showMsg('danger', '网络错误: ' + e.message);
+        }
+    }
+
+    function showMsg(type, text) {
+        const el = document.getElementById('msg');
+        el.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show">
+            ${text}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个人信息 - 中医智能诊断系统</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <style>
+    body { background: #f6f7fb; }
+    .container { max-width: 900px; }
+    .card { border: 0; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .header { display:flex; align-items:center; justify-content:space-between; margin: 20px 0; }
+    .header h2 { margin:0; }
+    .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #e9ecef; background:#fff; }
+    .muted { color:#6c757d; }
+      .avatar-preview{
+    width: 96px;          /* 需要更小就调成 72 */
+    height: 96px;
+    border-radius: 50%;   /* 要方形可去掉 */
+    object-fit: cover;    /* 裁剪充满 */
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    background:#fff;
+  }
+  </style>
+</head>
+<body>
+<div class="container py-3">
+  <div class="header">
+    <div>
+      <h2>个人信息</h2>
+      <div class="muted">查看与修改个人资料（患者）</div>
+    </div>
+    <div>
+      <a class="btn btn-outline-secondary" href="/patient/home">返回首页</a>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body d-flex align-items-center gap-3">
+      <div style="position: relative;">
+        <img id="avatar" class="avatar-preview" src="/images/avatar-placeholder.svg" alt="头像" />
+        <label for="avatarInput" style="position: absolute; bottom: 0; right: 0; background: #667eea; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px;" title="点击上传头像">
+          📷
+        </label>
+        <input type="file" id="avatarInput" accept="image/*" style="display: none;" />
+      </div>
+      <div>
+        <div class="fw-bold" id="displayName">加载中...</div>
+        <div class="muted" id="displayUsername"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form id="profileForm">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">真实姓名</label>
+            <input class="form-control" id="realName" placeholder="请输入真实姓名" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">手机号</label>
+            <input class="form-control" id="phone" placeholder="请输入手机号" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">邮箱</label>
+            <input class="form-control" id="email" placeholder="请输入邮箱" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">性别</label>
+            <select class="form-select" id="gender">
+              <option value="">未设置</option>
+              <option value="0">男</option>
+              <option value="1">女</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">出生日期</label>
+            <input type="date" class="form-control" id="birthDate" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">地址</label>
+            <input class="form-control" id="address" placeholder="请输入地址" />
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary">保存修改</button>
+          <button type="button" class="btn btn-outline-primary" onclick="loadProfile()">重新加载</button>
+          <button type="button" class="btn btn-outline-danger ms-auto" onclick="logout()">退出登录</button>
+        </div>
+      </form>
+
+      <div id="msg" class="mt-3"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getToken() {
+    const t = localStorage.getItem('token');
+    return t ? ('Bearer ' + t) : null;
+  }
+
+  function showMsg(type, text) {
+    const el = document.getElementById('msg');
+    el.innerHTML = `<div class="alert alert-${type}" role="alert">${text}</div>`;
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    location.href = '/login';
+  }
+
+  function normalizeDateToInput(value) {
+    if (!value) return '';
+    // 兼容 "2025-12-22" 或 "2025-12-22 21:23:26" 或 ISO
+    const s = String(value);
+    return s.substring(0, 10);
+  }
+
+  async function loadProfile() {
+    const auth = getToken();
+    if (!auth) {
+      showMsg('warning', '未检测到登录信息，请重新登录');
+      setTimeout(() => location.href = '/login', 800);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/patient/info', {
+        headers: { 'Authorization': auth }
+      });
+      const data = await res.json();
+      if (data.code !== 200) {
+        showMsg('danger', data.message || '加载失败');
+        return;
+      }
+
+      const p = data.data;
+      document.getElementById('displayName').textContent = p.realName || p.username || '患者';
+      document.getElementById('displayUsername').textContent = p.username ? ('用户名：' + p.username) : '';
+      document.getElementById('avatar').src = p.avatarUrl || '/images/avatar-placeholder.svg';
+
+      document.getElementById('realName').value = p.realName || '';
+      document.getElementById('phone').value = p.phone || '';
+      document.getElementById('email').value = p.email || '';
+      document.getElementById('gender').value = (p.gender === 0 || p.gender === 1) ? String(p.gender) : '';
+      document.getElementById('birthDate').value = normalizeDateToInput(p.birthDate);
+      document.getElementById('address').value = p.address || '';
+
+      document.getElementById('msg').innerHTML = '';
+    } catch (e) {
+      showMsg('danger', '加载个人信息失败：' + e.message);
+    }
+  }
+
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const auth = getToken();
+    if (!auth) {
+      showMsg('warning', '未检测到登录信息，请重新登录');
+      return;
+    }
+
+    const payload = {
+      realName: document.getElementById('realName').value || null,
+      phone: document.getElementById('phone').value || null,
+      email: document.getElementById('email').value || null,
+      gender: document.getElementById('gender').value === '' ? null : Number(document.getElementById('gender').value),
+      birthDate: document.getElementById('birthDate').value || null,
+      address: document.getElementById('address').value || null,
+    };
+
+    try {
+      const res = await fetch('/api/patient/info', {
+        method: 'PUT',
+        headers: {
+          'Authorization': auth,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.code !== 200) {
+        showMsg('danger', data.message || '保存失败');
+        return;
+      }
+      showMsg('success', data.message || '保存成功');
+      await loadProfile();
+    } catch (e) {
+      showMsg('danger', '保存失败：' + e.message);
+    }
+  });
+
+  // 头像上传
+  document.getElementById('avatarInput').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 验证文件大小
+    if (file.size > 5 * 1024 * 1024) {
+      showMsg('danger', '图片大小不能超过5MB');
+      return;
+    }
+
+    // 验证文件类型
+    if (!file.type.startsWith('image/')) {
+      showMsg('danger', '请选择图片文件');
+      return;
+    }
+
+    const auth = getToken();
+    if (!auth) {
+      showMsg('warning', '未检测到登录信息，请重新登录');
+      return;
+    }
+
+    try {
+      showMsg('info', '上传中...');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/patient/avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': auth
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.code !== 200) {
+        showMsg('danger', data.message || '上传失败');
+        return;
+      }
+
+      showMsg('success', '头像上传成功');
+      // 更新头像显示
+      document.getElementById('avatar').src = data.data + '?t=' + Date.now();
+      // 重新加载个人信息
+      await loadProfile();
+    } catch (e) {
+      showMsg('danger', '上传失败：' + e.message);
+    }
+  });
+
+  // 初始化
+  loadProfile();
+</script>
+</body>
+</html>
+

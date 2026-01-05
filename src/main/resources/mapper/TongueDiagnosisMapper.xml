@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tcm.diagnosissystem.mapper.doctor.TongueDiagnosisMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TongueDiagnosisResultMap" type="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="tongueColor" column="tongue_color"/>
+        <result property="tongueShape" column="tongue_shape"/>
+        <result property="coatingColor" column="coating_color"/>
+        <result property="coatingQuality" column="coating_quality"/>
+        <result property="syndrome" column="syndrome"/>
+        <result property="pathogenesis" column="pathogenesis"/>
+        <result property="advice" column="advice"/>
+        <result property="fullAnalysis" column="full_analysis"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 插入舌诊记录 -->
+    <insert id="insert" parameterType="com.tcm.diagnosissystem.entity.TongueDiagnosis"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tongue_diagnosis (
+            user_id,
+            image_url,
+            tongue_color,
+            tongue_shape,
+            coating_color,
+            coating_quality,
+            syndrome,
+            pathogenesis,
+            advice,
+            full_analysis,
+            create_time
+        ) VALUES (
+                     #{userId},
+                     #{imageUrl},
+                     #{tongueColor},
+                     #{tongueShape},
+                     #{coatingColor},
+                     #{coatingQuality},
+                     #{syndrome},
+                     #{pathogenesis},
+                     #{advice},
+                     #{fullAnalysis},
+                     #{createTime}
+                 )
+    </insert>
+
+    <!-- 根据用户ID查询 -->
+    <select id="findByUserId" resultMap="TongueDiagnosisResultMap">
+        SELECT
+            id, user_id, image_url, tongue_color, tongue_shape,
+            coating_color, coating_quality, syndrome, pathogenesis,
+            advice, full_analysis, create_time
+        FROM tongue_diagnosis
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据ID查询单条 -->
+    <select id="findById" resultMap="TongueDiagnosisResultMap">
+        SELECT
+            id, user_id, image_url, tongue_color, tongue_shape,
+            coating_color, coating_quality, syndrome, pathogenesis,
+            advice, full_analysis, create_time
+        FROM tongue_diagnosis
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据ID删除 -->
+    <delete id="deleteById">
+        DELETE FROM tongue_diagnosis
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 根据用户ID和ID删除（权限验证） -->
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM tongue_diagnosis
+        WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <!-- 更新舌诊记录 -->
+    <update id="update" parameterType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+        UPDATE tongue_diagnosis
+        <set>
+            <if test="tongueColor != null">tongue_color = #{tongueColor},</if>
+            <if test="tongueShape != null">tongue_shape = #{tongueShape},</if>
+            <if test="coatingColor != null">coating_color = #{coatingColor},</if>
+            <if test="coatingQuality != null">coating_quality = #{coatingQuality},</if>
+            <if test="syndrome != null">syndrome = #{syndrome},</if>
+            <if test="pathogenesis != null">pathogenesis = #{pathogenesis},</if>
+            <if test="advice != null">advice = #{advice},</if>
+            <if test="fullAnalysis != null">full_analysis = #{fullAnalysis},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 查询用户最新的一条记录 -->
+    <select id="findLatestByUserId" resultMap="TongueDiagnosisResultMap">
+        SELECT
+            id, user_id, image_url, tongue_color, tongue_shape,
+            coating_color, coating_quality, syndrome, pathogenesis,
+            advice, full_analysis, create_time
+        FROM tongue_diagnosis
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 分页查询用户舌诊历史 -->
+    <select id="findByUserIdWithPage" resultMap="TongueDiagnosisResultMap">
+        SELECT
+            id, user_id, image_url, tongue_color, tongue_shape,
+            coating_color, coating_quality, syndrome, pathogenesis,
+            advice, full_analysis, create_time
+        FROM tongue_diagnosis
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 统计用户舌诊记录总数 -->
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM tongue_diagnosis
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 根据证型查询 -->
+    <select id="findBySyndrome" resultMap="TongueDiagnosisResultMap">
+        SELECT
+            id, user_id, image_url, tongue_color, tongue_shape,
+            coating_color, coating_quality, syndrome, pathogenesis,
+            advice, full_analysis, create_time
+        FROM tongue_diagnosis
+        WHERE syndrome LIKE CONCAT('%', #{syndrome}, '%')
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据日期范围查询 -->
+    <select id="findByDateRange" resultMap="TongueDiagnosisResultMap">
+        SELECT
+            id, user_id, image_url, tongue_color, tongue_shape,
+            coating_color, coating_quality, syndrome, pathogenesis,
+            advice, full_analysis, create_time
+        FROM tongue_diagnosis
+        WHERE user_id = #{userId}
+          AND create_time BETWEEN #{startDate} AND #{endDate}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 批量删除 -->
+    <delete id="deleteBatch">
+        DELETE FROM tongue_diagnosis
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+        SELECT * FROM tongue_diagnosis WHERE id = #{id}
+    </select>
+
+    <!-- 更新诊断记录 -->
+    <update id="updateById">
+        UPDATE tongue_diagnosis
+        SET doctor_id = #{doctorId},
+            final_syndrome = #{finalSyndrome},
+            final_advice = #{finalAdvice},
+            status = #{status},
+            review_time = #{reviewTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 查询待审核记录 -->
+    <select id="selectPendingList" resultType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+        SELECT * FROM tongue_diagnosis
+        WHERE status = 0
+        ORDER BY create_time DESC
+    </select>
+
+
+
+</mapper>

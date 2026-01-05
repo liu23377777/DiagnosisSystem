@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 中医诊断系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+        .login-container h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h2>🌿 中医诊断系统</h2>
+
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage" style="display:none;" th:text="${success}"></div>
+    <!-- 成功提示脚本 -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var flashSuccess = /*[[${success}?:'']]*/ '';
+        if (flashSuccess !== '') {
+            var el = document.getElementById('successMessage');
+            el.style.display = 'block';
+            el.textContent = '✅ ' + flashSuccess;
+        }
+        /*]]>*/
+    </script>
+
+    <form id="loginForm" method="post" action="/login">
+        <div class="form-group">
+            <label for="role">身份</label>
+            <select id="role" name="role" required>
+                <option value="PATIENT">患者</option>
+                <option value="DOCTOR">医生</option>
+                <option value="ADMIN">管理员</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" id="username" name="username" required placeholder="请输入用户名">
+        </div>
+
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" required placeholder="请输入密码">
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">登录</button>
+    </form>
+
+    <div class="register-link">
+        还没有账号？<a href="/register">立即注册</a>
+    </div>
+</div>
+
+<script>
+    // 若用户禁用 JS 也能正常表单提交
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        // 角色不需要前端提交，后端会根据用户名返回
+        const roleSelect = document.getElementById('role');
+        const role = roleSelect.value;
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '登录中...';
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    role: role
+                })
+                
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                // ✅ 保存登录信息（只存纯 token）
+                // 强制清除旧 cookie，避免携带无效 token
+                document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
+                let pureToken = result.data.token.startsWith('Bearer ') ? result.data.token.substring(7) : result.data.token;
+                localStorage.setItem('token', pureToken);
+                document.cookie = 'token=' + pureToken + '; Path=/; Max-Age=86400';
+                localStorage.setItem('userId', result.data.userInfo.id);
+                localStorage.setItem('username', result.data.userInfo.username);
+                localStorage.setItem('role', result.data.role || result.data.userInfo.role);
+
+                successMessage.style.display = 'block';
+                successMessage.textContent = `✅ 登录成功！正在跳转...`;
+
+                // ✅ 根据角色跳转
+                setTimeout(() => {
+                    const userRole = result.data.role || role;
+                    if (userRole === 'PATIENT') {
+                        window.location.href = '/patient/home';
+                    } else if (role === 'DOCTOR') {
+                        window.location.href = '/doctor/home';
+                    } else if (role === 'ADMIN') {
+                        window.location.href = '/admin/dashboard';
+                    }
+                }, 1500);
+
+            } else {
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = `❌ ${result.message || '登录失败'}`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = '登录';
+            }
+        } catch (error) {
+            console.error('登录请求失败:', error);
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = `❌ 网络错误，请稍后重试`;
+            submitBtn.disabled = false;
+            submitBtn.textContent = '登录';
+        }
+    });
+</script>
+</body>
+</html>

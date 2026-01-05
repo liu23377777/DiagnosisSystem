@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问诊工作台 - 医生端</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body{background:#f7f8fa;padding:1.5rem;}
+        .card{border:0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .avatar{width:40px;height:40px;border-radius:50%;object-fit:cover}
+        .split{display:grid;grid-template-columns:420px 1fr;gap:1rem;align-items:start}
+        @media (max-width: 992px){
+            .split{grid-template-columns:1fr}
+        }
+        .list-scroll{max-height:70vh;overflow:auto}
+        .muted{color:#6c757d}
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">🩺 问诊工作台</h3>
+        <div>
+            <button class="btn btn-outline-secondary" onclick="history.back()">返回</button>
+            <button class="btn btn-primary" onclick="loadData()">刷新</button>
+        </div>
+    </div>
+
+    <div class="split">
+        <!-- 左侧：列表与筛选 -->
+        <div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-12">
+                            <input id="searchInput" class="form-control" placeholder="🔍 患者姓名/关键词">
+                        </div>
+                        <div class="col-12">
+                            <input type="date" id="dateFilter" class="form-control">
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button class="btn btn-primary flex-fill" onclick="applyFilter()">筛选</button>
+                            <button class="btn btn-outline-secondary flex-fill" onclick="resetFilter()">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-0">
+                    <div id="listContainer" class="list-group list-scroll"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：详情与处理 -->
+        <div>
+            <div class="card">
+                <div class="card-body p-4">
+                    <div id="emptyDetail" class="text-center muted py-5">
+                        <div style="font-size:48px;">📋</div>
+                        <div class="mt-2">请选择左侧一条预约开始问诊</div>
+                    </div>
+
+                    <div id="detailPanel" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <div class="muted">预约ID：<span id="dAppointmentId"></span></div>
+                                <div class="fw-bold fs-5" id="dPatientName"></div>
+                                <div class="muted" id="dTime"></div>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" onclick="delCurrent()">删除预约</button>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">医生诊断</label>
+                            <textarea id="diagnosis" class="form-control" rows="4" placeholder="请输入诊断结论..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">医嘱建议</label>
+                            <textarea id="advice" class="form-control" rows="4" placeholder="请输入医嘱建议..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">收费项目</label>
+                            <select id="itemSel" class="form-select">
+                                <option value="">请选择收费项目</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">处方摘要（可选）</label>
+                            <textarea id="prescription" class="form-control" rows="3" placeholder="可填写处方摘要..."></textarea>
+                        </div>
+                        <button id="submitBtn" class="btn btn-success w-100" onclick="finishConsultation()">
+                            <span id="submitText">结束问诊并生成支付单</span>
+                            <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getToken(){
+        const ls = localStorage.getItem('token');
+        if(ls) return ls;
+        const m = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    const token = getToken();
+    let allData = [];
+    let currentAppointmentId = null;
+
+    window.onload = async function(){
+        if(!token){alert('未登录');location.href='/login';return;}
+        await loadItems();
+        await loadData();
+    };
+
+    async function loadItems(){
+        try{
+            const resp = await fetch('/api/catalog/non-drug-items');
+            const json = await resp.json();
+            const sel = document.getElementById('itemSel');
+            (json.data||[]).forEach(it=>{
+                const opt=document.createElement('option');
+                opt.value=it.itemName;
+                opt.dataset.price=it.unitPrice;
+                opt.textContent=`${it.itemName} (￥${Number(it.unitPrice).toFixed(2)})`;
+                sel.appendChild(opt);
+            });
+        }catch(e){
+            console.error('加载收费项目失败',e);
+        }
+    }
+
+    async function loadData(){
+        const res = await fetch('/api/doctor/appointment/my',{headers:{'Authorization':'Bearer '+token}});
+        const data = await res.json();
+        if(data.code===200){
+            allData = data.data || [];
+            renderList();
+        }else{
+            alert(data.message||'加载失败');
+        }
+    }
+
+    function applyFilter(){renderList()}
+
+    function resetFilter(){
+        document.getElementById('searchInput').value='';
+        document.getElementById('dateFilter').value='';
+        renderList();
+    }
+
+    function renderList(){
+        const kw=document.getElementById('searchInput').value.trim().toLowerCase();
+        const date=document.getElementById('dateFilter').value;
+
+        const list=allData.filter(it=>{
+            const name=(it.patientName||'').toLowerCase();
+            if(kw && !name.includes(kw)) return false;
+            if(date){
+                const d = it.appointTime ? new Date(it.appointTime).toISOString().slice(0,10) : '';
+                if(d!==date) return false;
+            }
+            return true;
+        });
+
+        const c=document.getElementById('listContainer');
+        if(list.length===0){
+            c.innerHTML='<div class="text-muted text-center py-5">暂无预约记录</div>';
+            return;
+        }
+
+        c.innerHTML = '';
+        list.forEach(it=>{
+            const aId = it.id;
+            const el = document.createElement('button');
+            el.type='button';
+            el.className='list-group-item list-group-item-action d-flex gap-3 align-items-start';
+            el.onclick=()=>selectAppointment(it);
+            el.innerHTML = `
+                <img class="avatar" src="/images/avatar-placeholder.svg" alt="头像">
+                <div class="flex-fill text-start">
+                    <div class="d-flex w-100 justify-content-between">
+                        <strong>${it.patientName||('患者ID:'+it.patientId)}</strong>
+                        <small class="text-muted">${format(it.appointTime)}</small>
+                    </div>
+                    <div class="text-muted mt-1">科室ID: ${it.deptId}</div>
+                </div>
+            `;
+            c.appendChild(el);
+        });
+    }
+
+    function selectAppointment(it){
+        currentAppointmentId = it.id;
+        document.getElementById('emptyDetail').style.display='none';
+        document.getElementById('detailPanel').style.display='block';
+
+        document.getElementById('dAppointmentId').textContent = it.id;
+        document.getElementById('dPatientName').textContent = it.patientName || ('患者ID:'+it.patientId);
+        document.getElementById('dTime').textContent = '预约时间：' + format(it.appointTime);
+    }
+
+    async function delCurrent(){
+        if(!currentAppointmentId){alert('未选择预约');return;}
+        if(!confirm('确认删除该预约？')) return;
+        const r = await fetch('/api/appointment/'+currentAppointmentId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+        const j = await r.json();
+        alert(j.message||'已删除');
+        if(j.code===200){
+            currentAppointmentId=null;
+            document.getElementById('detailPanel').style.display='none';
+            document.getElementById('emptyDetail').style.display='block';
+            await loadData();
+        }
+    }
+
+    async function finishConsultation(){
+        if(!currentAppointmentId){alert('请先选择一条预约');return;}
+        const itemName=document.getElementById('itemSel').value;
+        if(!itemName){alert('请选择收费项目');return;}
+
+        const btn=document.getElementById('submitBtn');
+        document.getElementById('submitText').classList.add('d-none');
+        document.getElementById('submitSpinner').classList.remove('d-none');
+        btn.disabled=true;
+        try{
+            const res = await fetch(`/api/payment/create-from-appointment/${currentAppointmentId}?itemName=`+encodeURIComponent(itemName),{
+                method:'POST',
+                headers:{'Authorization':'Bearer '+token}
+            });
+            const data = await res.json();
+            if(data.code===200){
+                alert('已生成支付单，支付单ID：'+data.data.id);
+            }else{
+                alert(data.message||'生成支付单失败');
+            }
+        }catch(err){
+            console.error(err);
+            alert('网络错误，请稍后重试');
+        }finally{
+            document.getElementById('submitText').classList.remove('d-none');
+            document.getElementById('submitSpinner').classList.add('d-none');
+            btn.disabled=false;
+        }
+    }
+
+    function format(ts){
+        if(!ts) return '-';
+        return new Date(ts).toLocaleString();
+    }
+</script>
+</body>
+</html>

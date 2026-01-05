@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>患者首页</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .user-info {
+      color: #666;
+    }
+
+    .content {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .menu-item {
+      padding: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .menu-item:hover {
+      transform: translateY(-5px);
+    }
+
+    .menu-item h3 {
+      margin-bottom: 10px;
+    }
+
+    .logout-btn {
+      background: #ff4757;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      float: right;
+    }
+
+    .logout-btn:hover {
+      background: #ff3838;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <button class="logout-btn" onclick="logout()">退出登录</button>
+    <h1>中医诊断系统 - 患者中心</h1>
+    <div class="user-info">
+      <p>欢迎您,<span id="username">加载中...</span></p>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2>功能菜单</h2>
+    <div class="menu">
+      <div class="menu-item" onclick="location.href='/patient/diagnosis'">
+        <h3>📋 AI诊断</h3>
+        <p>上传舌象进行智能诊断</p>
+      </div>
+      <div class="menu-item" onclick="location.href='/patient/records'">
+        <h3>📁 诊断记录</h3>
+        <p>查看历史诊断记录</p>
+      </div>
+      <div class="menu-item" onclick="location.href='/patient/appointment'">
+        <h3>📅 预约挂号</h3>
+        <p>在线选择科室医生进行预约</p>
+      </div>
+      <div class="menu-item" onclick="location.href='/patient/profile'">
+        <h3>👤 个人信息</h3>
+        <p>查看和修改个人资料</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.onload = function() {
+    checkLogin();
+  };
+
+  function checkLogin() {
+    // 从 localStorage 获取用户信息
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+
+    // 如果没有登录信息,跳转到登录页
+    if (!userId || !username) {
+      alert('请先登录');
+      location.href = '/login';
+      return;
+    }
+
+    // 获取患者详细信息
+    fetch('/api/patient/info?userId=' + userId, {
+      method: 'GET'
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.code === 200) {
+                // 显示真实姓名,如果没有则显示用户名
+                document.getElementById('username').textContent =
+                        data.data.realName || data.data.username || username;
+              } else {
+                // 如果接口失败,至少显示 localStorage 中的用户名
+                document.getElementById('username').textContent = username;
+                console.error('获取用户信息失败:', data.message);
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              // 网络错误时,至少显示 localStorage 中的用户名
+              document.getElementById('username').textContent = username;
+            });
+  }
+
+  function logout() {
+    if (confirm('确定要退出登录吗?')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      localStorage.removeItem('role');
+      location.href = '/login';
+    }
+  }
+</script>
+</body>
+</html>

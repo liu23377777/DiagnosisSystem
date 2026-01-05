@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>问诊支付</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:2rem;}
+    .wrap{max-width:700px;margin:0 auto;}
+    .card{border:0;border-radius:16px;box-shadow:0 8px 25px rgba(0,0,0,.15);} 
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+    <h2 class="mb-0">💳 问诊结束支付</h2>
+    <button class="btn btn-light" onclick="location.href='/patient/home'">返回首页</button>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-4">
+      <div class="mb-3">
+        <div class="text-muted">支付单ID</div>
+        <div class="fs-5 fw-bold" id="paymentIdText"></div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">收费项目</label>
+        <input id="itemName" class="form-control" disabled />
+      </div>
+
+      <div class="mb-4">
+        <div class="text-muted">应付金额</div>
+        <div class="fs-3 fw-bold">￥<span id="amount">--</span></div>
+      </div>
+
+      <button id="payBtn" class="btn btn-success w-100" onclick="payNow()" disabled>
+        <span id="payText">立即支付（模拟）</span>
+        <span id="paySpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  function getToken(){
+    return localStorage.getItem('token') || (document.cookie.match(/(?:^|;\s*)token=([^;]+)/)||[])[1] || null;
+  }
+  const token = getToken();
+  const paymentId = /*[[${paymentId}]]*/ '';
+  document.getElementById('paymentIdText').textContent = paymentId;
+
+  // 加载支付信息
+  async function loadPayment(){
+    try{
+            const res = await fetch(`/api/payment/${paymentId}`, {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      });
+      if(!res.ok) throw new Error(`状态码 ${res.status}`);
+      const json = await res.json();
+      if(json.code!==200) throw new Error(json.message||'接口错误');
+      const pay = json.data;
+      document.getElementById('itemName').value = pay.itemName;
+      document.getElementById('amount').textContent = Number(pay.amount).toFixed(2);
+      document.getElementById('payBtn').disabled=false;
+    }catch(e){
+      console.error('获取支付单失败',e);
+      alert('获取支付信息失败，请稍后重试');
+    }
+  }
+
+  async function payNow(){
+    if(!token){alert('未登录');location.href='/login';return;}
+    document.getElementById('payText').classList.add('d-none');
+      document.getElementById('paySpinner').classList.remove('d-none');
+      document.getElementById('payBtn').disabled=true;
+      const res = await fetch(`/api/payment/complete/${paymentId}`,{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    if(data.code===200){
+      alert('支付成功');
+      location.href='/patient/home';
+    }else{
+      alert(data.message||'支付失败');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded',loadPayment);
+</script>
+</body>
+</html>
