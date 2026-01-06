@@ -1,7 +1,7 @@
 package com.tcm.diagnosissystem.service.doctor;
 
-import com.tcm.diagnosissystem.entity.Appointment;
-import com.tcm.diagnosissystem.entity.Payment;
+import com.tcm.diagnosissystem.entity.patient.Appointment;
+import com.tcm.diagnosissystem.entity.patient.Payment;
 import com.tcm.diagnosissystem.mapper.doctor.AppointmentMapper;
 import com.tcm.diagnosissystem.mapper.doctor.NonDrugCatalogMapper;
 import com.tcm.diagnosissystem.mapper.doctor.PaymentMapper;

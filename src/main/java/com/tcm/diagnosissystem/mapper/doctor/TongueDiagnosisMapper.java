@@ -1,7 +1,7 @@
 // 路径: src/main/java/com/tcm/diagnosissystem/mapper/TongueDiagnosisMapper.java
 package com.tcm.diagnosissystem.mapper.doctor;
 
-import com.tcm.diagnosissystem.entity.TongueDiagnosis;
+import com.tcm.diagnosissystem.entity.patient.TongueDiagnosis;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

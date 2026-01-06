@@ -1,7 +1,7 @@
 // 路径: src/main/java/com/tcm/diagnosissystem/service/AdminService.java
 package com.tcm.diagnosissystem.service.admin;
 
-import com.tcm.diagnosissystem.entity.Admin;
+import com.tcm.diagnosissystem.entity.admin.Admin;
 import com.tcm.diagnosissystem.mapper.admin.AdminMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

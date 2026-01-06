@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.tcm.diagnosissystem.mapper.doctor.PaymentMapper">
 
-    <resultMap id="BaseResultMap" type="com.tcm.diagnosissystem.entity.Payment">
+    <resultMap id="BaseResultMap" type="com.tcm.diagnosissystem.entity.patient.Payment">
         <id column="id" property="id" />
         <result column="appointment_id" property="appointmentId" />
         <result column="patient_id" property="patientId" />

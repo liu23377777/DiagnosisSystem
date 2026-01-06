@@ -1,7 +1,7 @@
 // 路径: src/main/java/com/tcm/diagnosissystem/service/PatientService.java
 package com.tcm.diagnosissystem.service.patient;
 
-import com.tcm.diagnosissystem.entity.Patient;
+import com.tcm.diagnosissystem.entity.patient.Patient;
 import com.tcm.diagnosissystem.mapper.patient.PatientMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

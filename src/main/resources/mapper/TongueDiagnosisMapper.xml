@@ -5,7 +5,7 @@
 <mapper namespace="com.tcm.diagnosissystem.mapper.doctor.TongueDiagnosisMapper">
 
     <!-- 结果映射 -->
-    <resultMap id="TongueDiagnosisResultMap" type="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+    <resultMap id="TongueDiagnosisResultMap" type="com.tcm.diagnosissystem.entity.patient.TongueDiagnosis">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="imageUrl" column="image_url"/>
@@ -21,7 +21,7 @@
     </resultMap>
 
     <!-- 插入舌诊记录 -->
-    <insert id="insert" parameterType="com.tcm.diagnosissystem.entity.TongueDiagnosis"
+    <insert id="insert" parameterType="com.tcm.diagnosissystem.entity.patient.TongueDiagnosis"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO tongue_diagnosis (
             user_id,
@@ -84,7 +84,7 @@
     </delete>
 
     <!-- 更新舌诊记录 -->
-    <update id="update" parameterType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+    <update id="update" parameterType="com.tcm.diagnosissystem.entity.patient.TongueDiagnosis">
         UPDATE tongue_diagnosis
         <set>
             <if test="tongueColor != null">tongue_color = #{tongueColor},</if>
@@ -163,7 +163,7 @@
     </delete>
 
     <!-- 根据ID查询 -->
-    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.patient.TongueDiagnosis">
         SELECT * FROM tongue_diagnosis WHERE id = #{id}
     </select>
 
@@ -179,7 +179,7 @@
     </update>
 
     <!-- 查询待审核记录 -->
-    <select id="selectPendingList" resultType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+    <select id="selectPendingList" resultType="com.tcm.diagnosissystem.entity.patient.TongueDiagnosis">
         SELECT * FROM tongue_diagnosis
         WHERE status = 0
         ORDER BY create_time DESC

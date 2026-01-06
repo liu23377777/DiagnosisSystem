@@ -1,4 +1,4 @@
-package com.tcm.diagnosissystem.entity;
+package com.tcm.diagnosissystem.entity.doctor;
 
 public class Department {
     private Long id;

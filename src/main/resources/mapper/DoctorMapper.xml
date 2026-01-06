@@ -4,19 +4,19 @@
 <mapper namespace="com.tcm.diagnosissystem.mapper.doctor.DoctorMapper">
 
     <!-- ✅ 只保留一个 selectByUsername -->
-    <select id="selectByUsername" resultType="com.tcm.diagnosissystem.entity.Doctor">
+    <select id="selectByUsername" resultType="com.tcm.diagnosissystem.entity.doctor.Doctor">
         SELECT * FROM doctor WHERE username = #{username}
     </select>
 
     <!-- 查询待审核列表 -->
-    <select id="selectPendingList" resultType="com.tcm.diagnosissystem.entity.TongueDiagnosis">
+    <select id="selectPendingList" resultType="com.tcm.diagnosissystem.entity.patient.TongueDiagnosis">
         SELECT * FROM tongue_diagnosis
         WHERE status = 0
         ORDER BY create_time DESC
     </select>
 
     <!-- 根据ID查询诊断记录 -->
-    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.Doctor">
+    <select id="selectById" resultType="com.tcm.diagnosissystem.entity.doctor.Doctor">
         SELECT * FROM doctor WHERE id = #{id}
     </select>
 

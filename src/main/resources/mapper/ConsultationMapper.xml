@@ -3,7 +3,7 @@
 <mapper namespace="com.tcm.diagnosissystem.mapper.patient.ConsultationMapper">
 
     <!-- 通用 resultMap -->
-    <resultMap id="BaseResultMap" type="com.tcm.diagnosissystem.entity.Consultation">
+    <resultMap id="BaseResultMap" type="com.tcm.diagnosissystem.entity.patient.Consultation">
         <id     column="id"              property="id"/>
         <result column="user_id"         property="userId"/>
         <result column="doctor_id"       property="doctorId"/>
@@ -20,7 +20,7 @@
     </resultMap>
 
     <!-- ============= 插入 ============= -->
-    <insert id="insert" parameterType="com.tcm.diagnosissystem.entity.Consultation" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.tcm.diagnosissystem.entity.patient.Consultation" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO consultation (
             user_id, chief_complaint, present_illness, past_history, allergy_history,
             tongue_description, pulse_description, other_symptoms, status, create_time, update_time)

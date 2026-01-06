@@ -2,7 +2,7 @@ package com.tcm.diagnosissystem.controller.doctor;
 
 import com.tcm.diagnosissystem.common.Result;
 import com.tcm.diagnosissystem.dto.request.doctor.PrescriptionCreateRequest;
-import com.tcm.diagnosissystem.entity.Prescription;
+import com.tcm.diagnosissystem.entity.doctor.Prescription;
 import com.tcm.diagnosissystem.entity.PrescriptionItem;
 import com.tcm.diagnosissystem.service.doctor.PrescriptionService;
 import com.tcm.diagnosissystem.util.JwtUtil;
@@ -20,7 +20,7 @@ public class PrescriptionApiController {
     @Autowired private PrescriptionService prescriptionService;
     @Autowired private JwtUtil jwtUtil;
 
-        @GetMapping("/my")
+    @GetMapping("/my")
     public Result<?> my(@RequestHeader("Authorization") String auth){
         Long doctorId = jwtUtil.getUserIdFromToken(auth.replace("Bearer ",""));
         List<Prescription> list = prescriptionService.listByDoctor(doctorId);

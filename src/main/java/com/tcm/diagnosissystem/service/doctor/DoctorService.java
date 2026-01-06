@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.service.doctor;
 
-import com.tcm.diagnosissystem.entity.Doctor;
+import com.tcm.diagnosissystem.entity.doctor.Doctor;
 import com.tcm.diagnosissystem.mapper.doctor.DoctorMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

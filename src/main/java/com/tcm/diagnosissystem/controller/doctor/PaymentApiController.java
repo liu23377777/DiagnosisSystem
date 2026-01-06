@@ -1,7 +1,7 @@
 package com.tcm.diagnosissystem.controller.doctor;
 
 import com.tcm.diagnosissystem.common.Result;
-import com.tcm.diagnosissystem.entity.Payment;
+import com.tcm.diagnosissystem.entity.patient.Payment;
 import com.tcm.diagnosissystem.service.doctor.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

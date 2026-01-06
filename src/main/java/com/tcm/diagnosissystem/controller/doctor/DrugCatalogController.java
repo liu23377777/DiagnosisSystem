@@ -1,7 +1,7 @@
 package com.tcm.diagnosissystem.controller.doctor;
 
 import com.tcm.diagnosissystem.common.Result;
-import com.tcm.diagnosissystem.entity.DrugCatalogItem;
+import com.tcm.diagnosissystem.entity.doctor.DrugCatalogItem;
 import com.tcm.diagnosissystem.mapper.doctor.DrugCatalogMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

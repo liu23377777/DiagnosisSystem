@@ -1,7 +1,7 @@
 package com.tcm.diagnosissystem.mapper.doctor;
 
 import com.tcm.diagnosissystem.dto.response.patient.DoctorSimpleDTO;
-import com.tcm.diagnosissystem.entity.Doctor;
+import com.tcm.diagnosissystem.entity.doctor.Doctor;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

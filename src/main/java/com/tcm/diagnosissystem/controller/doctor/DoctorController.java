@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.controller.doctor;
 
-import com.tcm.diagnosissystem.entity.Doctor;
+import com.tcm.diagnosissystem.entity.doctor.Doctor;
 import com.tcm.diagnosissystem.service.doctor.DoctorService;
 import com.tcm.diagnosissystem.util.JwtUtil;
 import jakarta.servlet.http.Cookie;

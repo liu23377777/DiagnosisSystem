@@ -2,7 +2,7 @@ package com.tcm.diagnosissystem.controller.patient;
 
 import com.tcm.diagnosissystem.common.Result;
 import com.tcm.diagnosissystem.dto.response.patient.PatientInfoResponse;
-import com.tcm.diagnosissystem.entity.Patient;
+import com.tcm.diagnosissystem.entity.patient.Patient;
 import com.tcm.diagnosissystem.mapper.patient.PatientMapper;
 import com.tcm.diagnosissystem.service.patient.PatientService;
 import com.tcm.diagnosissystem.service.doctor_patient.diagnosis.TongueDiagnosisService;

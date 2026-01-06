@@ -3,9 +3,9 @@ package com.tcm.diagnosissystem.service.doctor;
 
 import com.tcm.diagnosissystem.dto.request.doctor.TongueReviewRequest;
 import com.tcm.diagnosissystem.dto.response.doctor_patient.TongueDetailResponse;
-import com.tcm.diagnosissystem.entity.Patient;
-import com.tcm.diagnosissystem.entity.Doctor;
-import com.tcm.diagnosissystem.entity.TongueDiagnosis;
+import com.tcm.diagnosissystem.entity.patient.Patient;
+import com.tcm.diagnosissystem.entity.doctor.Doctor;
+import com.tcm.diagnosissystem.entity.patient.TongueDiagnosis;
 import com.tcm.diagnosissystem.mapper.patient.PatientMapper;
 import com.tcm.diagnosissystem.mapper.doctor.DoctorMapper;
 import com.tcm.diagnosissystem.mapper.doctor.TongueDiagnosisMapper;

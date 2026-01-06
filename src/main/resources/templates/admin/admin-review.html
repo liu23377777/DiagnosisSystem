@@ -1,71 +1,71 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title>管理员审核</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Microsoft YaHei', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 15px;
-      padding: 30px;
-    }
-    h1 { color: #667eea; margin-bottom: 20px; }
-    .application-item {
-      background: #f8f9fa;
-      padding: 20px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border-left: 4px solid #667eea;
-    }
-    .application-item h3 { color: #333; margin-bottom: 10px; }
-    .application-item p { margin: 5px 0; font-size: 14px; color: #666; }
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .btn { padding: 8px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
-    .btn-success { background: #28a745; color: white; }
-    .btn-danger { background: #dc3545; color: white; }
-    .btn:hover { opacity: 0.9; }
-  </style>
-</head>
-<body>
-<div class="container">
-  <h1>⚙️ 管理员审核</h1>
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>管理员审核</title>-->
+<!--  <style>-->
+<!--    * { margin: 0; padding: 0; box-sizing: border-box; }-->
+<!--    body {-->
+<!--      font-family: 'Microsoft YaHei', Arial, sans-serif;-->
+<!--      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);-->
+<!--      padding: 20px;-->
+<!--    }-->
+<!--    .container {-->
+<!--      max-width: 1200px;-->
+<!--      margin: 0 auto;-->
+<!--      background: white;-->
+<!--      border-radius: 15px;-->
+<!--      padding: 30px;-->
+<!--    }-->
+<!--    h1 { color: #667eea; margin-bottom: 20px; }-->
+<!--    .application-item {-->
+<!--      background: #f8f9fa;-->
+<!--      padding: 20px;-->
+<!--      margin-bottom: 15px;-->
+<!--      border-radius: 8px;-->
+<!--      border-left: 4px solid #667eea;-->
+<!--    }-->
+<!--    .application-item h3 { color: #333; margin-bottom: 10px; }-->
+<!--    .application-item p { margin: 5px 0; font-size: 14px; color: #666; }-->
+<!--    .actions {-->
+<!--      display: flex;-->
+<!--      gap: 10px;-->
+<!--      margin-top: 15px;-->
+<!--    }-->
+<!--    .btn { padding: 8px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }-->
+<!--    .btn-success { background: #28a745; color: white; }-->
+<!--    .btn-danger { background: #dc3545; color: white; }-->
+<!--    .btn:hover { opacity: 0.9; }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="container">-->
+<!--  <h1>⚙️ 管理员审核</h1>-->
 
-  <div th:if="${#lists.isEmpty(applications)}">
-    <p style="text-align: center; color: #999; padding: 50px;">暂无待审核申请</p>
-  </div>
+<!--  <div th:if="${#lists.isEmpty(applications)}">-->
+<!--    <p style="text-align: center; color: #999; padding: 50px;">暂无待审核申请</p>-->
+<!--  </div>-->
 
-  <div th:each="app : ${applications}" class="application-item">
-    <h3 th:text="${app.realName} + ' - ' + ${app.title}"></h3>
-    <p><strong>医院:</strong> <span th:text="${app.hospital}"></span></p>
-    <p><strong>科室:</strong> <span th:text="${app.department}"></span></p>
-    <p><strong>从业年限:</strong> <span th:text="${app.yearsExperience}"></span>年</p>
-    <p><strong>执照号:</strong> <span th:text="${app.licenseNumber}"></span></p>
-    <p><strong>申请理由:</strong> <span th:text="${app.reason} ?: '无'"></span></p>
-    <p><strong>申请时间:</strong> <span th:text="${#temporals.format(app.createTime, 'yyyy-MM-dd HH:mm')}"></span></p>
+<!--  <div th:each="app : ${applications}" class="application-item">-->
+<!--    <h3 th:text="${app.realName} + ' - ' + ${app.title}"></h3>-->
+<!--    <p><strong>医院:</strong> <span th:text="${app.hospital}"></span></p>-->
+<!--    <p><strong>科室:</strong> <span th:text="${app.department}"></span></p>-->
+<!--    <p><strong>从业年限:</strong> <span th:text="${app.yearsExperience}"></span>年</p>-->
+<!--    <p><strong>执照号:</strong> <span th:text="${app.licenseNumber}"></span></p>-->
+<!--    <p><strong>申请理由:</strong> <span th:text="${app.reason} ?: '无'"></span></p>-->
+<!--    <p><strong>申请时间:</strong> <span th:text="${#temporals.format(app.createTime, 'yyyy-MM-dd HH:mm')}"></span></p>-->
 
-    <div class="actions">
-      <form method="post" th:action="@{/admin/approve/{id}(id=${app.id})}">
-        <button type="submit" class="btn btn-success">✅ 通过</button>
-      </form>
+<!--    <div class="actions">-->
+<!--      <form method="post" th:action="@{/admin/approve/{id}(id=${app.id})}">-->
+<!--        <button type="submit" class="btn btn-success">✅ 通过</button>-->
+<!--      </form>-->
 
-      <form method="post" th:action="@{/admin/reject/{id}(id=${app.id})}" onsubmit="return confirm('确认拒绝？')">
-        <input type="hidden" name="reason" value="资料不符合要求">
-        <button type="submit" class="btn btn-danger">❌ 拒绝</button>
-      </form>
-    </div>
-  </div>
-</div>
-</body>
-</html>
+<!--      <form method="post" th:action="@{/admin/reject/{id}(id=${app.id})}" onsubmit="return confirm('确认拒绝？')">-->
+<!--        <input type="hidden" name="reason" value="资料不符合要求">-->
+<!--        <button type="submit" class="btn btn-danger">❌ 拒绝</button>-->
+<!--      </form>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->

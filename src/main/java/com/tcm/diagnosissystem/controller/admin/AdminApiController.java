@@ -1,9 +1,9 @@
 package com.tcm.diagnosissystem.controller.admin;
 
 import com.tcm.diagnosissystem.common.Result;
-import com.tcm.diagnosissystem.entity.Admin;
-import com.tcm.diagnosissystem.entity.Doctor;
-import com.tcm.diagnosissystem.entity.Patient;
+import com.tcm.diagnosissystem.entity.admin.Admin;
+import com.tcm.diagnosissystem.entity.doctor.Doctor;
+import com.tcm.diagnosissystem.entity.patient.Patient;
 import com.tcm.diagnosissystem.mapper.admin.AdminMapper;
 import com.tcm.diagnosissystem.mapper.doctor.DoctorMapper;
 import com.tcm.diagnosissystem.mapper.patient.PatientMapper;

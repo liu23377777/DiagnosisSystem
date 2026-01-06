@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.mapper.patient;
 
-import com.tcm.diagnosissystem.entity.Department;
+import com.tcm.diagnosissystem.entity.doctor.Department;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 

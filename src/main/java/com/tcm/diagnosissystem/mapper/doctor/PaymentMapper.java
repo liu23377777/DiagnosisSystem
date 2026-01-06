@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.mapper.doctor;
 
-import com.tcm.diagnosissystem.entity.Payment;
+import com.tcm.diagnosissystem.entity.patient.Payment;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

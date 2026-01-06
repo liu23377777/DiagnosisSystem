@@ -1,5 +1,5 @@
 // 路径: src/main/java/com/tcm/diagnosissystem/entity/Admin.java
-package com.tcm.diagnosissystem.entity;
+package com.tcm.diagnosissystem.entity.admin;
 
 import java.time.LocalDateTime;
 

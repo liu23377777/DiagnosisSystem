@@ -1,7 +1,7 @@
 package com.tcm.diagnosissystem.controller.doctor;
 
 import com.tcm.diagnosissystem.common.Result;
-import com.tcm.diagnosissystem.entity.Appointment;
+import com.tcm.diagnosissystem.entity.patient.Appointment;
 import com.tcm.diagnosissystem.mapper.doctor.AppointmentMapper;
 import com.tcm.diagnosissystem.mapper.doctor.PaymentMapper;
 import com.tcm.diagnosissystem.util.JwtUtil;

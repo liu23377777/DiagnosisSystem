@@ -4,7 +4,7 @@ import com.tcm.diagnosissystem.common.Result;
 import com.tcm.diagnosissystem.dto.response.doctor.DiagnosisComparisonResponse;
 import com.tcm.diagnosissystem.dto.response.doctor_patient.DiagnosisStatisticsResponse;
 import com.tcm.diagnosissystem.dto.response.doctor.HealthTrendResponse;
-import com.tcm.diagnosissystem.entity.TongueDiagnosis;
+import com.tcm.diagnosissystem.entity.patient.TongueDiagnosis;
 import com.tcm.diagnosissystem.service.doctor_patient.diagnosis.TongueDiagnosisService;
 import com.tcm.diagnosissystem.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;

@@ -2,7 +2,7 @@ package com.tcm.diagnosissystem.service.doctor;
 
 import com.tcm.diagnosissystem.dto.request.doctor.PrescriptionCreateRequest;
 import com.tcm.diagnosissystem.dto.response.doctor.PrescriptionResponse;
-import com.tcm.diagnosissystem.entity.Prescription;
+import com.tcm.diagnosissystem.entity.doctor.Prescription;
 import com.tcm.diagnosissystem.entity.PrescriptionItem;
 import com.tcm.diagnosissystem.mapper.doctor.PrescriptionItemMapper;
 import com.tcm.diagnosissystem.mapper.doctor.PrescriptionMapper;

@@ -1,4 +1,4 @@
-package com.tcm.diagnosissystem.entity;
+package com.tcm.diagnosissystem.entity.doctor;
 
 import java.math.BigDecimal;
 

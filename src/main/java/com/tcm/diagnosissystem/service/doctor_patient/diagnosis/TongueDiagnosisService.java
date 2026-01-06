@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.tcm.diagnosissystem.dto.response.doctor.DiagnosisComparisonResponse;
 import com.tcm.diagnosissystem.dto.response.doctor_patient.DiagnosisStatisticsResponse;
 import com.tcm.diagnosissystem.dto.response.doctor.HealthTrendResponse;
-import com.tcm.diagnosissystem.entity.TongueDiagnosis;
+import com.tcm.diagnosissystem.entity.patient.TongueDiagnosis;
 import com.tcm.diagnosissystem.mapper.doctor.TongueDiagnosisMapper;
 import com.tcm.diagnosissystem.service.patient.ai.QwenVisionService;
 import org.slf4j.Logger;

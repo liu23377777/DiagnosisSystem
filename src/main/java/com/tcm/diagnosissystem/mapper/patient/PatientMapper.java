@@ -1,7 +1,7 @@
 // 路径: src/main/java/com/tcm/diagnosissystem/mapper/PatientMapper.java
 package com.tcm.diagnosissystem.mapper.patient;
 
-import com.tcm.diagnosissystem.entity.Patient;
+import com.tcm.diagnosissystem.entity.patient.Patient;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

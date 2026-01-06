@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.dto.response.doctor;
 
-import com.tcm.diagnosissystem.entity.TongueDiagnosis;
+import com.tcm.diagnosissystem.entity.patient.TongueDiagnosis;
 import java.util.List;
 import java.util.Map;
 

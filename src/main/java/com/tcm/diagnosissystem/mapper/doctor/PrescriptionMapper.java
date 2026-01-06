@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.mapper.doctor;
 
-import com.tcm.diagnosissystem.entity.Prescription;
+import com.tcm.diagnosissystem.entity.doctor.Prescription;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

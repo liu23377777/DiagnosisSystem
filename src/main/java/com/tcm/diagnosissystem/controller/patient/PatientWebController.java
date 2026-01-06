@@ -1,7 +1,7 @@
 package com.tcm.diagnosissystem.controller.patient;
 
-import com.tcm.diagnosissystem.entity.Patient;
-import com.tcm.diagnosissystem.entity.TongueDiagnosis;
+import com.tcm.diagnosissystem.entity.patient.Patient;
+import com.tcm.diagnosissystem.entity.patient.TongueDiagnosis;
 import com.tcm.diagnosissystem.service.patient.PatientService;
 import com.tcm.diagnosissystem.service.doctor_patient.diagnosis.TongueDiagnosisService;
 import jakarta.servlet.http.HttpServletRequest;

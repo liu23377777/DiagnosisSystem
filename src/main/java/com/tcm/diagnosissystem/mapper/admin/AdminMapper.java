@@ -1,7 +1,7 @@
 // 路径: src/main/java/com/tcm/diagnosissystem/mapper/AdminMapper.java
 package com.tcm.diagnosissystem.mapper.admin;
 
-import com.tcm.diagnosissystem.entity.Admin;
+import com.tcm.diagnosissystem.entity.admin.Admin;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

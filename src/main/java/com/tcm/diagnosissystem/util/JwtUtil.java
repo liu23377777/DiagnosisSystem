@@ -33,7 +33,7 @@ public class JwtUtil {
     }
 
     /**
-     * 从Token中获取用户ID
+//     * 从Token中获取用户ID
      */
     public Long getUserIdFromToken(String token) {
         Claims claims = getClaims(token);

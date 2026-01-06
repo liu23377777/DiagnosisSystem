@@ -1,4 +1,4 @@
-package com.tcm.diagnosissystem.entity;
+package com.tcm.diagnosissystem.entity.patient;
 
 import java.time.LocalDateTime;
 

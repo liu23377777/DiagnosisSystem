@@ -1,6 +1,6 @@
 package com.tcm.diagnosissystem.mapper.doctor;
 
-import com.tcm.diagnosissystem.entity.NonDrugCatalog;
+import com.tcm.diagnosissystem.entity.doctor.NonDrugCatalog;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

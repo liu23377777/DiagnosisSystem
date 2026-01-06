@@ -2,7 +2,7 @@ package com.tcm.diagnosissystem.service.doctor.consultation.impl;
 
 import com.tcm.diagnosissystem.dto.request.doctor.ConsultationCreateRequest;
 import com.tcm.diagnosissystem.dto.response.doctor_patient.ConsultationResponse;
-import com.tcm.diagnosissystem.entity.Consultation;
+import com.tcm.diagnosissystem.entity.patient.Consultation;
 import com.tcm.diagnosissystem.mapper.patient.ConsultationMapper;
 import com.tcm.diagnosissystem.service.doctor.consultation.ConsultationService;
 import org.springframework.beans.BeanUtils;
